@@ -1,0 +1,19 @@
+{%- comment -%} Social links from theme settings. Params: class, size {%- endcomment -%}
+{%- assign s = size | default: 20 -%}
+<ul class="social-icons{% if class %} {{ class }}{% endif %}" role="list" aria-label="{{ 'accessibility.social_links' | t }}">
+  {%- if settings.whatsapp_number != blank -%}
+    <li><a class="social-icons__link" href="https://wa.me/{{ settings.whatsapp_number }}" target="_blank" rel="noopener" aria-label="WhatsApp">{% render 'icon', name: 'whatsapp', size: s %}</a></li>
+  {%- endif -%}
+  {%- if settings.social_instagram != blank -%}
+    <li><a class="social-icons__link" href="{{ settings.social_instagram }}" target="_blank" rel="noopener" aria-label="Instagram">{% render 'icon', name: 'instagram', size: s %}</a></li>
+  {%- endif -%}
+  {%- if settings.social_facebook != blank -%}
+    <li><a class="social-icons__link" href="{{ settings.social_facebook }}" target="_blank" rel="noopener" aria-label="Facebook">{% render 'icon', name: 'facebook', size: s %}</a></li>
+  {%- endif -%}
+  {%- if settings.social_tiktok != blank -%}
+    <li><a class="social-icons__link" href="{{ settings.social_tiktok }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'icon', name: 'tiktok', size: s %}</a></li>
+  {%- endif -%}
+  {%- if settings.social_youtube != blank -%}
+    <li><a class="social-icons__link" href="{{ settings.social_youtube }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'icon', name: 'youtube', size: s %}</a></li>
+  {%- endif -%}
+</ul>

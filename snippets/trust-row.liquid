@@ -1,0 +1,16 @@
+{%- comment -%}
+  Four trust claims. Params: layout ('row' | 'grid' | 'inline'), class, show_icons (default true)
+{%- endcomment -%}
+{%- liquid
+  assign lay = layout | default: 'row'
+  assign icons_on = true
+  if show_icons == false
+    assign icons_on = false
+  endif
+-%}
+<ul class="trust-row trust-row--{{ lay }}{% if class %} {{ class }}{% endif %}" role="list">
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'badge-check', size: 18 %}{% endif %}<span>{{ settings.trust_claim_1 | default: 'trust.original' | t }}</span></li>
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'truck', size: 18 %}{% endif %}<span>{{ settings.trust_claim_2 | default: 'Free delivery over PKR 3,000' }}</span></li>
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'banknote', size: 18 %}{% endif %}<span>{{ settings.trust_claim_3 | default: 'trust.cod' | t }}</span></li>
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'exchange', size: 18 %}{% endif %}<span>{{ settings.trust_claim_4 | default: 'trust.exchange' | t }}</span></li>
+</ul>

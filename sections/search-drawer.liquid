@@ -1,0 +1,34 @@
+{%- comment -%} Foundation shell. Replaced by the predictive search implementation. {%- endcomment -%}
+<hp-drawer id="SearchDrawer" data-section-id="{{ section.id }}">
+  <div class="drawer search-drawer" role="presentation">
+    <div class="drawer__overlay" data-drawer-close></div>
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="SearchDrawer-title">
+      <div class="drawer__header">
+        <span id="SearchDrawer-title" class="drawer__title">{{ 'search.title' | t }}</span>
+        <button class="icon-button" type="button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+      </div>
+      <div class="drawer__body">
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search-drawer__form">
+          <label class="visually-hidden" for="SearchDrawer-input">{{ 'search.title' | t }}</label>
+          <div class="input-group">
+            <input id="SearchDrawer-input" class="field__input" type="search" name="q" placeholder="{{ 'search.placeholder' | t }}" autocomplete="off" data-drawer-focus>
+            <input type="hidden" name="options[prefix]" value="last">
+            <button class="button" type="submit" aria-label="{{ 'general.search' | t }}">{% render 'icon', name: 'search', size: 18 %}</button>
+          </div>
+        </form>
+        {%- if section.settings.brands_menu != blank -%}
+          <p class="eyebrow u-mt-6">{{ 'search.popular_brands' | t }}</p>
+          <div class="u-flex u-wrap u-gap-2 u-mt-4">
+            {%- for link in section.settings.brands_menu.links limit: 10 -%}
+              <a class="chip" href="{{ link.url }}">{{ link.title | escape }}</a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</hp-drawer>
+{% schema %}
+{ "name": "Search drawer", "tag": "div", "class": "shopify-section-search-drawer", "enabled_on": { "groups": ["custom.overlay"] },
+  "settings": [ { "type": "link_list", "id": "brands_menu", "label": "Popular brands menu (first 10 shown)" } ] }
+{% endschema %}

@@ -1,0 +1,50 @@
+{{ 'component-customers.css' | asset_url | stylesheet_tag }}
+<section class="customer container" data-section-id="{{ section.id }}">
+  <div class="customer__inner customer__inner--wide">
+    <a class="link--arrow" href="{{ routes.account_url }}">{% render 'icon', name: 'arrow-left', size: 16 %} {{ 'customer.account.return' | t }}</a>
+    <h1 class="customer__title">{{ 'customer.addresses.title' | t }}</h1>
+
+    <details class="accordion" id="AddAddress">
+      <summary class="accordion__summary">{{ 'customer.addresses.add_new' | t }} {% render 'icon', name: 'plus', size: 18 %}</summary>
+      <div class="accordion__content">
+        {%- form 'customer_address', customer.new_address, class: 'customer__form' -%}
+          {% render 'customer-address-fields', form: form, prefix: 'AddressNew' %}
+          <div class="u-flex u-gap-3"><button class="button" type="submit">{{ 'customer.addresses.add' | t }}</button></div>
+        {%- endform -%}
+      </div>
+    </details>
+
+    {%- paginate customer.addresses by 6 -%}
+      <div class="grid grid--3">
+        {%- for address in customer.addresses -%}
+          <div class="address-card">
+            {%- if address == customer.default_address -%}<span class="badge badge--new">{{ 'customer.addresses.default' | t }}</span>{%- endif -%}
+            <div class="text-sm">{{ address | format_address }}</div>
+            <div class="address-card__actions">
+              <button class="button button--sm button--ghost" type="button" data-drawer-open="EditAddress-{{ address.id }}">{{ 'customer.addresses.edit' | t }}</button>
+              {%- form 'customer_address', address -%}
+                <button class="button button--sm button--text" type="submit" name="_method" value="delete" onclick="return confirm({{ 'customer.addresses.delete_confirm' | t | json }})">{{ 'customer.addresses.delete' | t }}</button>
+              {%- endform -%}
+            </div>
+          </div>
+          <hp-drawer id="EditAddress-{{ address.id }}">
+            <div class="drawer" role="presentation">
+              <div class="drawer__overlay" data-drawer-close></div>
+              <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="EditAddress-{{ address.id }}-title">
+                <div class="drawer__header"><span class="drawer__title" id="EditAddress-{{ address.id }}-title">{{ 'customer.addresses.edit_address' | t }}</span><button class="icon-button" type="button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button></div>
+                <div class="drawer__body">
+                  {%- form 'customer_address', address, class: 'customer__form' -%}
+                    {% render 'customer-address-fields', form: form, prefix: address.id %}
+                    <div class="u-flex u-gap-3"><button class="button" type="submit">{{ 'customer.addresses.update' | t }}</button><button class="button button--ghost" type="button" data-drawer-close>{{ 'customer.addresses.cancel' | t }}</button></div>
+                  {%- endform -%}
+                </div>
+              </div>
+            </div>
+          </hp-drawer>
+        {%- endfor -%}
+      </div>
+      {%- if paginate.pages > 1 -%}<nav class="pagination" aria-label="Pagination">{{ paginate | default_pagination }}</nav>{%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+{% schema %}{ "name": "Customer addresses", "tag": "div", "settings": [] }{% endschema %}

@@ -1,0 +1,23 @@
+{
+  "type": "header",
+  "name": "Header group",
+  "sections": {
+    "announcement": {
+      "type": "announcement-marquee",
+      "settings": { "style": "marquee", "inverse": true },
+      "blocks": {
+        "a1": { "type": "item", "settings": { "text": "Free delivery on orders over PKR 3,000", "link": "", "icon": "truck" } },
+        "a2": { "type": "item", "settings": { "text": "100% original international brands", "link": "/pages/about-us", "icon": "badge-check" } },
+        "a3": { "type": "item", "settings": { "text": "Cash on delivery · confirmed on WhatsApp", "link": "", "icon": "banknote" } }
+      },
+      "block_order": ["a1", "a2", "a3"]
+    },
+    "header": {
+      "type": "header",
+      "settings": { "logo_width": 150, "menu": "main-menu", "brands_threshold": 12, "sticky": true, "show_search": true, "show_account": true },
+      "blocks": {},
+      "block_order": []
+    }
+  },
+  "order": ["announcement", "header"]
+}

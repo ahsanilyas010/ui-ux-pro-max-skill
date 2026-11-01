@@ -1,0 +1,44 @@
+{{ 'component-customers.css' | asset_url | stylesheet_tag }}
+<section class="customer container" data-section-id="{{ section.id }}">
+  <div class="customer__inner customer__inner--wide">
+    <a class="link--arrow" href="{{ routes.account_url }}">{% render 'icon', name: 'arrow-left', size: 16 %} {{ 'customer.account.return' | t }}</a>
+    <h1 class="customer__title">{{ 'customer.order.title' | t: name: order.name }}</h1>
+    <p class="u-text-muted">{{ 'customer.order.date' | t: date: order.created_at | time_tag: format: 'date_at_time' }}</p>
+    {%- if order.cancelled -%}<p class="notice notice--error">{{ 'customer.order.cancelled' | t: date: order.cancelled_at | time_tag: format: 'date_at_time' }} {{ 'customer.order.cancelled_reason' | t: reason: order.cancel_reason_label }}</p>{%- endif -%}
+    <div class="customer__grid">
+      <div>
+        <table class="customer__table">
+          <thead><tr><th>{{ 'customer.order.product' | t }}</th><th>{{ 'customer.order.price' | t }}</th><th>{{ 'customer.order.quantity' | t }}</th><th>{{ 'customer.order.total' | t }}</th></tr></thead>
+          <tbody>
+            {%- for line_item in order.line_items -%}
+              <tr>
+                <td data-label="{{ 'customer.order.product' | t }}">
+                  <a class="link" href="{{ line_item.product.url }}">{{ line_item.title }}</a>
+                  {%- if line_item.variant.title != 'Default Title' -%}<br><span class="u-text-muted">{{ line_item.variant.title }}</span>{%- endif -%}
+                  {%- if line_item.fulfillment -%}<br><span class="text-xs u-text-muted">{{ 'customer.order.fulfilled_at' | t: date: line_item.fulfillment.created_at | time_tag: format: 'date' }}{% if line_item.fulfillment.tracking_url %} · <a class="link" href="{{ line_item.fulfillment.tracking_url }}">{{ 'customer.order.track_shipment' | t }}</a>{% endif %}</span>{%- endif -%}
+                </td>
+                <td data-label="{{ 'customer.order.price' | t }}">{{ line_item.final_price | money }}</td>
+                <td data-label="{{ 'customer.order.quantity' | t }}">{{ line_item.quantity }}</td>
+                <td data-label="{{ 'customer.order.total' | t }}">{{ line_item.final_line_price | money }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+          <tfoot>
+            <tr><td colspan="3">{{ 'customer.order.subtotal' | t }}</td><td>{{ order.line_items_subtotal_price | money }}</td></tr>
+            {%- for discount_application in order.cart_level_discount_applications -%}<tr><td colspan="3">{{ 'customer.order.discount' | t }} ({{ discount_application.title }})</td><td>-{{ discount_application.total_allocated_amount | money }}</td></tr>{%- endfor -%}
+            {%- for shipping_method in order.shipping_methods -%}<tr><td colspan="3">{{ 'customer.order.shipping' | t }} ({{ shipping_method.title }})</td><td>{{ shipping_method.price | money }}</td></tr>{%- endfor -%}
+            {%- for tax_line in order.tax_lines -%}<tr><td colspan="3">{{ 'customer.order.tax' | t }} ({{ tax_line.title }} {{ tax_line.rate | times: 100 }}%)</td><td>{{ tax_line.price | money }}</td></tr>{%- endfor -%}
+            <tr><td colspan="3"><strong>{{ 'customer.order.total' | t }}</strong></td><td><strong>{{ order.total_net_amount | money_with_currency }}</strong></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <aside class="u-flex" style="flex-direction:column;gap:var(--space-5)">
+        <div><h2 class="h5">{{ 'customer.order.payment_status' | t }}</h2><p>{{ order.financial_status_label }}</p></div>
+        <div><h2 class="h5">{{ 'customer.order.fulfillment_status' | t }}</h2><p>{{ order.fulfillment_status_label }}</p></div>
+        <div><h2 class="h5">{{ 'customer.order.shipping_address' | t }}</h2><div class="text-sm">{{ order.shipping_address | format_address }}</div></div>
+        <div><h2 class="h5">{{ 'customer.order.billing_address' | t }}</h2><div class="text-sm">{{ order.billing_address | format_address }}</div></div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% schema %}{ "name": "Customer order", "tag": "div", "settings": [] }{% endschema %}

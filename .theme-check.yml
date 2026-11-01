@@ -1,0 +1,15 @@
+extends: theme-check:recommended
+ignore:
+  - node_modules/**
+  - scripts/**
+  - tests/**
+TranslationKeyExists:
+  enabled: true
+MatchingTranslations:
+  enabled: false
+RemoteAsset:
+  enabled: true
+ImgWidthAndHeight:
+  enabled: true
+LiquidHTMLSyntaxError:
+  enabled: true

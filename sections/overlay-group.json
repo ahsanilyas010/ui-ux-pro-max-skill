@@ -1,0 +1,9 @@
+{
+  "type": "custom.overlay",
+  "name": "Overlays",
+  "sections": {
+    "cart_drawer": { "type": "cart-drawer", "settings": {} },
+    "search_drawer": { "type": "search-drawer", "settings": {} }
+  },
+  "order": ["cart_drawer", "search_drawer"]
+}
