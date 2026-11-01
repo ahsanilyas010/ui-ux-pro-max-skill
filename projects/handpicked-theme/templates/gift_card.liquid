@@ -1,0 +1,26 @@
+{% layout none %}
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  {%- assign gc_value = gift_card.initial_value | money -%}
+  <title>{{ 'gift_cards.issued.title' | t: value: gc_value, shop: shop.name }}</title>
+  {% render 'css-variables' %}
+  {{ 'base.css' | asset_url | stylesheet_tag }}
+  {{ content_for_header }}
+</head>
+<body class="template-gift-card">
+  <main class="container container--narrow section" role="main">
+    <p class="eyebrow">{{ shop.name }}</p>
+    <h1 class="h2">{{ 'gift_cards.issued.subtext' | t }}</h1>
+    <p class="lead">{{ gift_card.initial_value | money }}</p>
+    {%- if gift_card.enabled == false or gift_card.expired -%}<p class="notice notice--error">{{ 'gift_cards.issued.expired' | t }}</p>{%- endif -%}
+    <p class="h3 u-mt-6" id="GiftCardCode">{{ gift_card.code | format_code }}</p>
+    {%- if gift_card.balance != gift_card.initial_value -%}<p class="u-text-muted">{{ 'gift_cards.issued.remaining_html' | t: balance: gift_card.balance | money }}</p>{%- endif -%}
+    {%- if gift_card.pass_url -%}<a class="link u-mt-6" href="{{ gift_card.pass_url }}">{{ 'gift_cards.issued.add_to_apple_wallet' | t }}</a>{%- endif -%}
+    <a class="button u-mt-6" href="{{ shop.url }}">{{ 'general.shop_now' | t }}</a>
+  </main>
+</body>
+</html>

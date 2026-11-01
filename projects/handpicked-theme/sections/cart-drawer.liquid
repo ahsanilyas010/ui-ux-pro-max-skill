@@ -1,0 +1,58 @@
+{%- comment -%} Foundation shell. Replaced by the full cart drawer implementation. {%- endcomment -%}
+<hp-drawer id="CartDrawer" data-section-id="{{ section.id }}">
+  <div class="drawer cart-drawer" role="presentation">
+    <div class="drawer__overlay" data-drawer-close></div>
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="CartDrawer-title">
+      <div class="drawer__header">
+        <span id="CartDrawer-title" class="drawer__title">{{ 'cart.title' | t }} ({{ cart.item_count }})</span>
+        <button class="icon-button" type="button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+      </div>
+      <div class="drawer__body">
+        {%- if cart.item_count == 0 -%}
+          <div class="empty-state">
+            {% render 'icon', name: 'bag', size: 40 %}
+            <p>{{ 'cart.empty' | t }}</p>
+            <a class="button" href="{{ routes.all_products_collection_url }}" data-drawer-close>{{ 'cart.empty_cta' | t }}</a>
+          </div>
+        {%- else -%}
+          <ul role="list" class="cart-drawer__items">
+            {%- for item in cart.items -%}
+              <li class="cart-drawer__item">
+                <div class="media media--card" style="width:72px">{% render 'image', image: item.image, sizes: '72px', widths: '144,216' %}</div>
+                <div>
+                  <p class="card__meta">{{ item.vendor }}</p>
+                  <a href="{{ item.url }}" class="card__title">{{ item.product.title }}</a>
+                  <p class="text-sm u-text-muted">{{ item.variant.title | default: '' }} × {{ item.quantity }}</p>
+                  <p class="price"><span class="price__current">{{ item.final_line_price | money }}</span></p>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+      {%- if cart.item_count > 0 -%}
+      <div class="drawer__footer">
+        <div class="u-flex u-between"><span>{{ 'cart.subtotal' | t }}</span><strong>{{ cart.total_price | money }}</strong></div>
+        <a class="button button--full" href="{{ routes.cart_url }}">{{ 'general.cart' | t }}</a>
+        <form action="{{ routes.cart_url }}" method="post"><button class="button button--secondary button--full" type="submit" name="checkout">{{ 'cart.checkout' | t }}</button></form>
+      </div>
+      {%- endif -%}
+    </div>
+  </div>
+</hp-drawer>
+<script>
+  (function () {
+    var id = {{ section.id | json }};
+    function rerender() {
+      HP.fetchSection(id).then(function (html) {
+        var fresh = HP.parseHTML(html).querySelector('#CartDrawer');
+        var cur = document.getElementById('CartDrawer');
+        if (fresh && cur) { cur.querySelector('.drawer__panel').innerHTML = fresh.querySelector('.drawer__panel').innerHTML; cur.connectedCallback(); }
+      }).catch(function () {});
+    }
+    document.addEventListener('hp:cart:updated', function (e) { rerender(); if (e.detail && e.detail.source === 'add') HP.openDrawer('CartDrawer'); });
+  })();
+</script>
+{% schema %}
+{ "name": "Cart drawer", "tag": "div", "class": "shopify-section-cart-drawer", "enabled_on": { "groups": ["custom.overlay"] }, "settings": [] }
+{% endschema %}

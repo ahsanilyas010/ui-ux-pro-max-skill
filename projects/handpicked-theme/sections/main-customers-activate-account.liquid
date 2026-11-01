@@ -1,0 +1,14 @@
+{{ 'component-customers.css' | asset_url | stylesheet_tag }}
+<section class="customer container" data-section-id="{{ section.id }}">
+  <div class="customer__inner">
+    <h1 class="customer__title">{{ 'customer.activate_account.title' | t }}</h1>
+    <p class="u-text-muted">{{ 'customer.activate_account.subtext' | t }}</p>
+    {%- form 'activate_customer_password', class: 'customer__form' -%}
+      {%- if form.errors -%}<div class="notice notice--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <div class="field"><label class="field__label" for="ActivatePassword">{{ 'customer.activate_account.password' | t }}</label><input class="field__input" type="password" name="customer[password]" id="ActivatePassword" autocomplete="new-password" required></div>
+      <div class="field"><label class="field__label" for="ActivatePasswordConfirm">{{ 'customer.activate_account.password_confirm' | t }}</label><input class="field__input" type="password" name="customer[password_confirmation]" id="ActivatePasswordConfirm" autocomplete="new-password" required></div>
+      <div class="u-flex u-gap-3"><button class="button" type="submit">{{ 'customer.activate_account.submit' | t }}</button><button class="button button--ghost" type="submit" name="decline">{{ 'customer.activate_account.cancel' | t }}</button></div>
+    {%- endform -%}
+  </div>
+</section>
+{% schema %}{ "name": "Customer activate account", "tag": "div", "settings": [] }{% endschema %}

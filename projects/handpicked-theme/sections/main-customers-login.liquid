@@ -1,0 +1,38 @@
+{{ 'component-customers.css' | asset_url | stylesheet_tag }}
+<section class="customer container" data-section-id="{{ section.id }}">
+  <div class="customer__inner">
+    <h1 class="customer__title" id="recover" tabindex="-1">{{ 'customer.login.title' | t }}</h1>
+    {%- form 'customer_login', novalidate: 'novalidate', class: 'customer__form' -%}
+      {%- if form.errors -%}<div class="notice notice--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <div class="field"><label class="field__label" for="CustomerEmail">{{ 'customer.login.email' | t }}</label><input class="field__input" type="email" name="customer[email]" id="CustomerEmail" autocomplete="email" autocorrect="off" autocapitalize="off" required></div>
+      {%- if form.password_needed -%}
+        <div class="field"><label class="field__label" for="CustomerPassword">{{ 'customer.login.password' | t }}</label><input class="field__input" type="password" name="customer[password]" id="CustomerPassword" autocomplete="current-password" required></div>
+      {%- endif -%}
+      <button class="button button--full" type="submit">{{ 'customer.login.sign_in' | t }}</button>
+      <div class="customer__links">
+        <a class="link" href="#recover-form">{{ 'customer.login.forgot_password' | t }}</a>
+        <a class="link" href="{{ routes.account_register_url }}">{{ 'customer.login.create_account' | t }}</a>
+      </div>
+    {%- endform -%}
+
+    <details id="recover-form" class="accordion">
+      <summary class="accordion__summary">{{ 'customer.login.reset_title' | t }} {% render 'icon', name: 'chevron-down', size: 18 %}</summary>
+      <div class="accordion__content">
+        <p>{{ 'customer.login.reset_text' | t }}</p>
+        {%- form 'recover_customer_password', class: 'customer__form' -%}
+          {%- if form.posted_successfully? -%}<p class="notice notice--success" role="status">{{ 'customer.login.reset_success' | t }}</p>{%- endif -%}
+          {%- if form.errors -%}<div class="notice notice--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+          <div class="field"><label class="field__label" for="RecoverEmail">{{ 'customer.login.email' | t }}</label><input class="field__input" type="email" name="email" id="RecoverEmail" autocomplete="email" required></div>
+          <button class="button button--secondary" type="submit">{{ 'customer.login.reset_submit' | t }}</button>
+        {%- endform -%}
+      </div>
+    </details>
+
+    {%- if shop.checkout.guest_login -%}
+      <hr>
+      <h2 class="h4">{{ 'customer.login.guest_title' | t }}</h2>
+      {%- form 'guest_login' -%}<button class="button button--ghost" type="submit">{{ 'customer.login.guest_continue' | t }}</button>{%- endform -%}
+    {%- endif -%}
+  </div>
+</section>
+{% schema %}{ "name": "Customer login", "tag": "div", "settings": [] }{% endschema %}
