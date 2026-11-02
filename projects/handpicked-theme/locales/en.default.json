@@ -42,7 +42,9 @@
     "star_reviews": "{{ rating }} out of 5 stars",
     "error": "Error",
     "success": "Success",
-    "submenu": "Open {{ title }} submenu"
+    "submenu": "Open {{ title }} submenu",
+    "pause_marquee": "Pause scrolling announcements",
+    "play_marquee": "Resume scrolling announcements"
   },
   "header": {
     "announcement_1": "Free delivery on orders over PKR 3,000",

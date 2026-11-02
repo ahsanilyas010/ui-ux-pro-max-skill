@@ -189,6 +189,16 @@
     });
   });
 
+  /* Make everything outside an open dialog inert (background not reachable by AT or keyboard). */
+  HP.setInert = function (on, keep) {
+    if (!('inert' in HTMLElement.prototype)) return;
+    HP.qsa('body > *').forEach((el) => {
+      if (el === keep || el.contains(keep) || el.id === 'HPToastRegion' || el.tagName === 'SCRIPT') return;
+      if (on) { if (!el.inert) { el.inert = true; el.setAttribute('data-hp-inert', ''); } }
+      else if (el.hasAttribute('data-hp-inert')) { el.inert = false; el.removeAttribute('data-hp-inert'); }
+    });
+  };
+
   /* ---------- <hp-drawer> ---------- */
   class HPDrawer extends HTMLElement {
     connectedCallback() {
@@ -208,8 +218,11 @@
       requestAnimationFrame(() => this.root.classList.add('is-open'));
       HP.lockScroll();
       doc.addEventListener('keydown', this._onKey);
-      const initial = this.querySelector('[data-drawer-focus]') || this.querySelector('.drawer__header button') || this.panel;
+      const title = this.querySelector('.drawer__title');
+      if (title && !title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1');
+      const initial = this.querySelector('[data-drawer-focus]') || title || this.querySelector('.drawer__header button') || this.panel;
       HP.trapFocus(this.panel || this, initial);
+      HP.setInert(true, this);
       if (this.opener && this.opener.setAttribute) this.opener.setAttribute('aria-expanded', 'true');
       HP.emit('drawer:open', { id: this.id, drawer: this });
     }
@@ -222,6 +235,7 @@
       const dur = HP.prefersReducedMotion() ? 0 : 260;
       setTimeout(done, dur);
       if (!silent) HP.unlockScroll(); else HP.unlockScroll();
+      HP.setInert(false, this);
       HP.releaseFocus();
       if (this.opener && this.opener.setAttribute) this.opener.setAttribute('aria-expanded', 'false');
       HP.emit('drawer:close', { id: this.id, drawer: this });
@@ -323,6 +337,27 @@
     doc.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') HP.qsa('details[data-close-on-outside][open]').forEach((d) => { d.open = false; d.querySelector('summary') && d.querySelector('summary').focus(); });
     });
+  });
+
+  /* ---------- Marquee pause/play (WCAG 2.2.2) ---------- */
+  doc.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-marquee-toggle]');
+    if (!btn) return;
+    const wrap = btn.closest('.marquee-wrap') || btn.parentElement;
+    const marquee = wrap && wrap.querySelector('.marquee');
+    if (!marquee) return;
+    const paused = !wrap.classList.contains('is-paused');
+    wrap.classList.toggle('is-paused', paused);
+    marquee.classList.toggle('is-paused', paused);
+    btn.setAttribute('aria-pressed', String(paused));
+    const label = paused ? btn.getAttribute('data-label-play') : btn.getAttribute('data-label-pause');
+    if (label) btn.setAttribute('aria-label', label);
+    try { sessionStorage.setItem('hp:marquee-paused', paused ? '1' : '0'); } catch (err) {}
+  });
+  HP.ready(() => {
+    let paused = false;
+    try { paused = sessionStorage.getItem('hp:marquee-paused') === '1'; } catch (err) {}
+    if (paused) HP.qsa('[data-marquee-toggle]').forEach((b) => b.click());
   });
 
   /* ---------- Theme editor events ---------- */
