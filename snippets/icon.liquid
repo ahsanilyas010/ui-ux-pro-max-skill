@@ -58,6 +58,8 @@
 {%- when 'package' -%}<g {{ stroke }}><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></g>
 {%- when 'globe' -%}<g {{ stroke }}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></g>
 {%- when 'eye' -%}<g {{ stroke }}><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></g>
+{%- when 'pause' -%}<g {{ stroke }}><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></g>
+{%- when 'play' -%}<g {{ stroke }}><path d="M6 4v16l14-8z"/></g>
 {%- when 'dots' -%}<g {{ stroke }}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></g>
 {%- else -%}<g {{ stroke }}><circle cx="12" cy="12" r="10"/></g>
 {%- endcase -%}

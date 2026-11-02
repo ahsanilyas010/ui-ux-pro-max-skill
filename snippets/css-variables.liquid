@@ -41,9 +41,11 @@
     --color-text-rgb: {{ settings.color_text | color_to_rgb | remove: 'rgb(' | remove: ')' }};
     --color-text-muted: {{ settings.color_text_muted }};
     --color-border: {{ settings.color_border }};
+    --color-border-ui: {{ settings.color_text_muted }}; /* >= 3:1 boundary for every interactive control (WCAG 1.4.11) */
     --color-accent: {{ settings.color_accent }};
     --color-accent-rgb: {{ settings.color_accent | color_to_rgb | remove: 'rgb(' | remove: ')' }};
     --color-accent-ink: {{ settings.color_accent_ink }};
+    --color-accent-on-dark: {{ settings.color_accent | color_lighten: 28 }}; /* gold readable on inverse sections */
     --color-sale: {{ settings.color_sale }};
     --color-success: {{ settings.color_success }};
     --color-inverse-bg: {{ settings.color_inverse_bg }};

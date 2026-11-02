@@ -5,8 +5,9 @@
 -%}
 {%- if items.size > 0 -%}
 <div class="announcement announcement--{{ style }}{% if section.settings.inverse %} announcement--inverse{% endif %}" data-section-id="{{ section.id }}" role="region" aria-label="Announcements">
-  <div class="announcement__inner{% if style == 'marquee' %} marquee{% else %} container{% endif %}">
+  <div class="announcement__inner{% if style == 'marquee' %} marquee-wrap{% else %} container{% endif %}">
     {%- if style == 'marquee' -%}
+    <div class="marquee">
       {%- for i in (1..2) -%}
         <ul class="marquee__track announcement__track" role="list" {% if i == 2 %}aria-hidden="true"{% endif %}>
           {%- for block in items -%}
@@ -21,6 +22,10 @@
           {%- endfor -%}
         </ul>
       {%- endfor -%}
+    </div>
+    <button class="marquee__pause" type="button" data-marquee-toggle aria-pressed="false" aria-label="{{ 'accessibility.pause_marquee' | t }}" data-label-pause="{{ 'accessibility.pause_marquee' | t }}" data-label-play="{{ 'accessibility.play_marquee' | t }}">
+      {% render 'icon', name: 'pause', size: 16 %}{% render 'icon', name: 'play', size: 16 %}
+    </button>
     {%- else -%}
       <ul class="announcement__static" role="list">
         {%- for block in items -%}
