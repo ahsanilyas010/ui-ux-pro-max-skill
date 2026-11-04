@@ -1,0 +1,55 @@
+{{ 'component-product.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign limit = section.settings.limit | default: 8
+  assign intent = recommendations.intent | default: 'related'
+-%}
+
+<section class="recs section section--border-top" data-product-recommendations data-section-id="{{ section.id }}" data-product-id="{{ product.id }}" data-limit="{{ limit }}" data-complementary="{{ section.settings.show_complementary }}" data-url="{{ routes.product_recommendations_url }}" hidden>
+  <div class="container">
+    {%- comment -%}
+      Slots filled by product-recommendations.js from Section Rendering responses.
+      When the section is rendered by the Recommendations API, the block below (data-recs-content) is what gets extracted.
+    {%- endcomment -%}
+    <div data-recs-slot="related"></div>
+    <div data-recs-slot="complementary"></div>
+
+    {%- if recommendations.performed and recommendations.products_count > 0 -%}
+      <div class="recs__content" data-recs-content data-intent="{{ intent }}">
+        <div class="section__header">
+          <div class="section__heading">
+            <h2 class="section__title">
+              {%- if intent == 'complementary' -%}
+                {%- if section.settings.complementary_heading != blank -%}{{ section.settings.complementary_heading | escape }}{%- else -%}{{ 'products.product.complete_the_look' | t }}{%- endif -%}
+              {%- else -%}
+                {%- if section.settings.heading != blank -%}{{ section.settings.heading | escape }}{%- else -%}{{ 'products.product.you_may_also_like' | t }}{%- endif -%}
+              {%- endif -%}
+            </h2>
+          </div>
+        </div>
+        <ul class="recs__list" role="list">
+          {%- for recommended in recommendations.products -%}
+            <li class="recs__item">
+              {%- render 'product-card', product: recommended, priority: false, sizes: '(min-width: 990px) 25vw, 62vw', show_quick_add: false -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  </div>
+  <script src="{{ 'product-recommendations.js' | asset_url }}" defer></script>
+</section>
+
+{% schema %}
+{
+  "name": "Product recommendations",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "You may also like" },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 4, "max": 10, "step": 1, "default": 8 },
+    { "type": "checkbox", "id": "show_complementary", "label": "Add a \"Complete the look\" row", "default": false },
+    { "type": "text", "id": "complementary_heading", "label": "\"Complete the look\" heading", "default": "Complete the look" }
+  ],
+  "presets": [{ "name": "Product recommendations" }]
+}
+{% endschema %}

@@ -1,0 +1,66 @@
+{%- comment -%}
+  Product gallery: scroll-snap slider (mobile) / main stage + vertical thumbnails (desktop), lightbox.
+  Params: product (required), section_id (required), fit ('auto'|'contain'|'cover'), current_variant
+  Behaviour lives in product-gallery.js; listens to HP 'variant:change'.
+{%- endcomment -%}
+{%- liquid
+  assign total = product.media.size
+-%}
+<div class="pgallery" data-gallery data-section-id="{{ section_id }}" data-total="{{ total }}">
+  {%- if total > 0 -%}
+    <div class="pgallery__layout">
+      {%- if total > 1 -%}
+        <ul class="pgallery__thumbs" role="list" aria-label="{{ 'products.product.gallery_label' | t }}" data-thumbs>
+          {%- for media in product.media -%}
+            <li>
+              <button type="button" class="pgallery__thumb{% if forloop.first %} is-active{% endif %}" data-thumb data-index="{{ forloop.index0 }}" aria-controls="Slide-{{ section_id }}-{{ forloop.index }}" aria-label="{{ 'accessibility.image_n_of' | t: index: forloop.index, total: total }}"{% if forloop.first %} aria-current="true"{% endif %}>
+                <span class="media">
+                  {%- render 'image', image: media.preview_image, sizes: '72px', widths: '144,216', alt: '' -%}
+                </span>
+                {%- if media.media_type != 'image' -%}<span class="pgallery__thumb-type" aria-hidden="true">{% render 'icon', name: 'eye', size: 14 %}</span>{%- endif -%}
+              </button>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      <div class="pgallery__stage">
+        <div class="pgallery__track" data-track tabindex="0" role="region" aria-roledescription="carousel" aria-label="{{ 'products.product.gallery_label' | t }}">
+          {%- for media in product.media -%}
+            {%- render 'product-media', media: media, index: forloop.index, total: total, section_id: section_id, priority: forloop.first, fit: fit -%}
+          {%- endfor -%}
+        </div>
+        {%- if total > 1 -%}
+          <button type="button" class="pgallery__nav pgallery__nav--prev icon-button" data-nav="-1" aria-label="{{ 'accessibility.previous' | t }}">{% render 'icon', name: 'chevron-left', size: 22 %}</button>
+          <button type="button" class="pgallery__nav pgallery__nav--next icon-button" data-nav="1" aria-label="{{ 'accessibility.next' | t }}">{% render 'icon', name: 'chevron-right', size: 22 %}</button>
+          <p class="pgallery__counter" data-counter aria-live="polite"><span data-counter-current>1</span>/<span>{{ total }}</span></p>
+          <div class="pgallery__dots" data-dots aria-hidden="true">
+            {%- for media in product.media -%}<span class="pgallery__dot{% if forloop.first %} is-active{% endif %}"></span>{%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <hp-drawer id="Lightbox-{{ section_id }}" data-lightbox>
+      <div class="drawer drawer--full" role="presentation">
+        <div class="drawer__overlay" data-drawer-close></div>
+        <div class="drawer__panel lightbox" role="dialog" aria-modal="true" aria-labelledby="Lightbox-{{ section_id }}-title">
+          <div class="drawer__header">
+            <span id="Lightbox-{{ section_id }}-title" class="drawer__title" data-lightbox-title>{{ product.title | escape }}</span>
+            <button type="button" class="icon-button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+          </div>
+          <div class="drawer__body lightbox__body">
+            <div class="lightbox__stage" data-lightbox-stage>
+              <img class="lightbox__img" data-lightbox-img width="1600" height="2000" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">
+            </div>
+            <button type="button" class="lightbox__nav lightbox__nav--prev icon-button" data-lightbox-nav="-1" aria-label="{{ 'accessibility.previous' | t }}">{% render 'icon', name: 'chevron-left', size: 24 %}</button>
+            <button type="button" class="lightbox__nav lightbox__nav--next icon-button" data-lightbox-nav="1" aria-label="{{ 'accessibility.next' | t }}">{% render 'icon', name: 'chevron-right', size: 24 %}</button>
+            <button type="button" class="lightbox__zoom button button--ghost button--sm" data-lightbox-zoom aria-pressed="false">{% render 'icon', name: 'zoom-in', size: 16 %}<span>{{ 'products.product.zoom_toggle' | t }}</span></button>
+          </div>
+        </div>
+      </div>
+    </hp-drawer>
+  {%- else -%}
+    <div class="media pgallery__frame pgallery__frame--empty">{% render 'image', image: nil %}</div>
+  {%- endif -%}
+</div>

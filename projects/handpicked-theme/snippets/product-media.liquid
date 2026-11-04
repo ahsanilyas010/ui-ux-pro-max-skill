@@ -1,0 +1,50 @@
+{%- comment -%}
+  One gallery slide.
+  Params:
+    media      (media, required)
+    index      (number, 1-based)
+    total      (number)
+    section_id (string)
+    priority   (boolean) first image only
+    fit        'auto' | 'contain' | 'cover'  (auto = cover only when the image is within 10% of the 4:5 frame)
+  Images are shown inside a fixed 4:5 frame (see .pgallery__track) so slides never change height.
+{%- endcomment -%}
+{%- liquid
+  assign preview = media.preview_image
+  assign use_cover = false
+  if fit == 'cover'
+    assign use_cover = true
+  elsif fit != 'contain' and preview.aspect_ratio
+    assign ratio_delta = preview.aspect_ratio | minus: 0.8 | abs | divided_by: 0.8
+    if ratio_delta <= 0.1
+      assign use_cover = true
+    endif
+  endif
+  assign slide_label = 'accessibility.image_n_of' | t: index: index, total: total
+  assign sizes_attr = '(min-width: 990px) 58vw, 100vw'
+  assign alt_text = media.alt | default: product.title
+-%}
+<div class="pgallery__slide" id="Slide-{{ section_id }}-{{ index }}" data-slide data-media-id="{{ media.id }}" data-media-type="{{ media.media_type }}" role="group" aria-roledescription="slide" aria-label="{{ slide_label }}">
+  {%- case media.media_type -%}
+    {%- when 'image' -%}
+      <button type="button" class="pgallery__zoom" data-zoom data-zoom-src="{{ media | image_url: width: 2000 }}" data-zoom-alt="{{ alt_text | escape }}" aria-label="{{ 'products.product.image_zoom' | t: index: index, total: total }}">
+        <span class="media pgallery__frame{% if use_cover %} pgallery__frame--cover{% endif %}">
+          {%- render 'image', image: preview, sizes: sizes_attr, widths: '540,720,900,1080,1296,1600', priority: priority, alt: alt_text -%}
+        </span>
+        <span class="pgallery__zoom-icon" aria-hidden="true">{% render 'icon', name: 'zoom-in', size: 18 %}</span>
+      </button>
+    {%- when 'video' -%}
+      <div class="media pgallery__frame pgallery__frame--video">
+        {{- media | video_tag: controls: true, preload: 'none', image_size: '1100x', class: 'pgallery__video' -}}
+      </div>
+    {%- when 'external_video' -%}
+      <div class="media pgallery__frame pgallery__frame--video">
+        {{- media | external_video_tag -}}
+      </div>
+    {%- else -%}
+      {%- comment -%} 3D models fall back to their preview image (no heavy viewer library). {%- endcomment -%}
+      <div class="media pgallery__frame">
+        {%- render 'image', image: preview, sizes: sizes_attr, widths: '540,720,900,1080', alt: alt_text -%}
+      </div>
+  {%- endcase -%}
+</div>

@@ -8,9 +8,14 @@ generator client {
 // Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
 // enough when changing adapters.
 // See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+// Dev uses sqlite. For production on Postgres (Vercel/Fly/Railway/Render):
+//   1. change provider to "postgresql"
+//   2. set DATABASE_URL to the Postgres connection string
+//   3. delete prisma/migrations and run `npx prisma migrate dev --name init` once against Postgres
+//      (the committed SQL migrations are sqlite dialect).
 datasource db {
   provider = "sqlite"
-  url      = "file:dev.sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Session {
@@ -31,4 +36,65 @@ model Session {
   emailVerified Boolean?  @default(false)
   refreshToken        String?
   refreshTokenExpires DateTime?
+}
+
+// Orders created through the app proxy. Money is stored in paisa (PKR minor units).
+model CodOrder {
+  id           String   @id @default(cuid())
+  shop         String
+  orderId      String
+  orderName    String
+  firstName    String   @default("")
+  productTitle String   @default("")
+  phone        String
+  city         String
+  cityVerified Boolean  @default(false)
+  dedupeHash   String   @unique
+  ip           String   @default("")
+  source       String   @default("")
+  variantIds   String   @default("") // ",123,456," so velocity can use contains
+  subtotal     Int
+  shipping     Int
+  total        Int
+  status       String   @default("created") // creating | created | failed | cancelled
+  riskTags     String   @default("")
+  createdAt    DateTime @default(now())
+
+  @@index([shop, createdAt])
+  @@index([phone])
+}
+
+model PhoneBlock {
+  phone     String   @id
+  reason    String   @default("")
+  refusals  Int      @default(0)
+  blocked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model RateHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+model Setting {
+  shop                  String  @id
+  enabled               Boolean @default(true)
+  freeThreshold         Int     @default(300000)
+  flatRate              Int     @default(25000)
+  etaText               String  @default("2-4 working days via PostEx")
+  paymentTermsTemplateId String?
+  paymentGatewayId      String?
+  blockedCitiesJson     String  @default("[]")
+  maxQty                Int     @default(5)
+  maxSubtotal           Int     @default(6000000)
+  highValueCap          Int     @default(1500000) // new phones above this get needs-confirmation + advance_required
+  useDraftOrder         Boolean @default(false)   // false = orderCreate (default); true = draftOrderCreate/Complete
+  testMode              Boolean @default(false)
+  whatsappNumber        String?
+  whatsappWebhookUrl    String?
+  advanceInstructions   String?
 }

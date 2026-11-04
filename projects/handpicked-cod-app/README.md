@@ -1,236 +1,136 @@
-# Shopify App Template - React Router
+# HandPicked COD Quick Order
 
-This is a template for building a [Shopify app](https://shopify.dev/docs/apps/getting-started) using [React Router](https://reactrouter.com/). It was forked from the [Shopify Remix app template](https://github.com/Shopify/shopify-app-template-remix) and converted to React Router.
+A Shopify custom app (React Router 7 + `@shopify/shopify-app-react-router` + Prisma) for HandPicked.pk
+(`hand-picked-online.myshopify.com`). The storefront theme posts a one-tap Cash on Delivery order to an
+**app proxy** endpoint; the app validates it, applies anti-fraud checks and creates a real Shopify order
+(payment status pending, gateway "Cash on Delivery (COD)").
 
-Rather than cloning this repo, follow the [Quick Start steps](https://github.com/Shopify/shopify-app-template-react-router#quick-start).
+Native Shopify checkout with its manual COD payment method is **kept as the fallback**. Do not remove that
+payment method: the theme links customers to `/checkout` whenever the quick order fails or is disabled.
 
-Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-react-router) for more details on the React Router app package.
+## What it does
 
-## Upgrading from Remix
+- `POST /apps/cod/order` creates the order (default path: `orderCreate`).
+- `POST /apps/cod/quote`, `GET /apps/cod/cities`, `GET /apps/cod/recent`, `GET /apps/cod/health`.
+- Validation: Pakistani mobile normalisation (`+923XXXXXXXXX`), ~150 city list with alias/typo matching,
+  honeypot field, minimum render time, per-IP and per-phone rate limits, 15 minute idempotent dedupe.
+- Variant checks: product must be `ACTIVE` and published on the Online Store, variant sellable, and quantity
+  must not exceed stock when the inventory policy is `DENY`.
+- Risk gate for **new phone numbers** (no prior created COD order): junk city, high value, velocity
+  (same variant ordered 3 or more times in 24 hours) and prior refusals. Flagged orders are created tagged
+  `needs-confirmation` for WhatsApp confirmation. New phones above the high-value cap (default PKR 15,000,
+  configurable) additionally get `advance-required` and the response `status` is `advance_required`
+  so the theme can ask for a small Easypaisa/JazzCash/Raast advance.
+- `orders/cancelled` webhook records refusals and auto-blocks a phone at 2 refusals (a junk-city order counts double).
+- Admin UI: settings page and a COD orders page with the phone blocklist.
 
-If you have an existing Remix app that you want to upgrade to React Router, please follow the [upgrade guide](https://github.com/Shopify/shopify-app-template-react-router/wiki/Upgrading-from-Remix). Otherwise, please follow the quick start guide below.
+## Order creation paths
 
-## Quick start
+| Path | When | Notes |
+| --- | --- | --- |
+| `orderCreate` (default) | `Setting.useDraftOrder = false` and `USE_ORDER_CREATE` is not `false` | `financialStatus: PENDING`, transaction `{kind: SALE, status: PENDING, gateway: "Cash on Delivery (COD)", amountSet}`, options `inventoryBehaviour: DECREMENT_OBEYING_POLICY`, `sendReceipt: false`. `sourceName` is omitted; `sourceIdentifier` holds the idempotency key. Shipping line "Standard Delivery (PostEx)". |
+| `draftOrderCreate` + `draftOrderComplete` | flag on | Optional `paymentTerms.paymentTermsTemplateId` and `paymentGatewayId`. Failed completion deletes the draft. |
 
-### Prerequisites
+Field names for both were checked against the Admin GraphQL schema (API `2026-10`). Inventory claim failures
+map to HTTP `409 sold_out`. Admin API 2026-10 rejects the deprecated `collectionByHandle` query and
+`Collection.ruleSet`; this app uses neither.
 
-Before you begin, you'll need to [download and install the Shopify CLI](https://shopify.dev/docs/apps/tools/cli/getting-started) if you haven't already.
+Not verified against a live store: whether `orderCreate` accepts the custom gateway string in your plan's
+configuration, and the exact display of the pending COD transaction in the admin. Test with
+**Test mode** on a draft/dev flow first (orders get `test: true`).
 
-### Setup
+## Proxy contract
 
-```shell
-shopify app init --template=https://github.com/Shopify/shopify-app-template-react-router
+`POST {{ settings.cod_proxy_path }}/order` (same origin, JSON). Body:
+
+```json
+{ "lines": [{ "variantId": 1234567890, "quantity": 1 }], "name": "…", "phone": "03XXXXXXXXX", "city": "Lahore",
+  "address": "…", "note": "", "email": "", "source": "pdp|drawer|cart", "website": "", "renderedAt": 1730000000000,
+  "cartToken": "…", "utm": { "source": "", "medium": "", "campaign": "" } }
 ```
 
-### Local Development
+Money is in paisa. Responses (always `application/json`, `Cache-Control: no-store`, never `application/liquid`):
 
-```shell
-shopify app dev
-```
+| Status | Body |
+| --- | --- |
+| 200 | `{ok, status: "created"\|"needs_confirmation"\|"advance_required", orderName, orderId, subtotal, shipping, total, eta, whatsapp, test, advance?}` |
+| 400 | `{ok:false, code:"bad_request"}` |
+| 403 | `{ok:false, code:"forbidden"}` (wrong shop) |
+| 409 | `{ok:false, code:"sold_out"}` (inventory race) or order in progress |
+| 410 | `{ok:false, code:"sold_out", variants:[{variantId, reason, available?}]}` |
+| 422 | `{ok:false, code:"validation"\|"blocked", errors:{field:message}}` |
+| 429 | `{ok:false, code:"rate_limited"}` with `Retry-After` |
+| 503 | quick order disabled |
+| 5xx | `{ok:false, code:"internal"}` |
 
-Press P to open the URL to your app. Once you click install, you can start development.
+The honeypot field `website` returns a fake `200` (`orderName: "#PENDING"`) and creates nothing.
+`GET /apps/cod/recent` returns `[{firstName, city, product, minutesAgo}]`: first name and city only, only
+verified-city orders that were not held for confirmation.
 
-Local development is powered by [the Shopify CLI](https://shopify.dev/docs/apps/tools/cli). It logs into your account, connects to an app, provides environment variables, updates remote config, creates a tunnel and provides commands to generate extensions.
+## Merchant setup
 
-### Authenticating and querying data
+1. In the Shopify Dev Dashboard create an app ("HandPicked COD Quick Order") with custom distribution for
+   `hand-picked-online.myshopify.com`.
+2. Replace `REPLACE_WITH_APP_URL` in `shopify.app.toml` with your hosted URL, then:
+   ```bash
+   npm install
+   npm run config:link      # shopify app config link
+   npm run deploy           # shopify app deploy  (pushes scopes, webhooks, app proxy)
+   ```
+3. Install the app on the store. Scopes: `write_orders, write_draft_orders, read_products, read_inventory,
+   read_orders, read_customers`.
+4. **Protected Customer Data**: in the Dev Dashboard (API access > Protected customer data) declare access to
+   customer name, phone, email and address, with the reason "Create and fulfil customer-placed Cash on Delivery
+   orders and prevent fraud". Without this declaration, order and customer fields come back redacted/blocked.
+5. Copy `.env.example` to `.env` (or set the variables on your host), run `npm run setup`, deploy.
+6. Open the app in admin, set delivery threshold and fee (must match the theme settings and Shopify shipping
+   rates), WhatsApp number, high-value cap, and leave **Test mode** on until the first real order is verified.
+7. Theme side: set `cod_proxy_path` to `/apps/cod` and enable the COD settings.
 
-To authenticate and query data you can use the `shopify` const that is exported from `/app/shopify.server.js`:
-
-```js
-export async function loader({ request }) {
-  const { admin } = await shopify.authenticate.admin(request);
-
-  const response = await admin.graphql(`
-    {
-      products(first: 25) {
-        nodes {
-          title
-          description
-        }
-      }
-    }`);
-
-  const {
-    data: {
-      products: { nodes },
-    },
-  } = await response.json();
-
-  return nodes;
-}
-```
-
-This template comes pre-configured with examples of:
-
-1. Setting up your Shopify app in [/app/shopify.server.ts](https://github.com/Shopify/shopify-app-template-react-router/blob/main/app/shopify.server.ts)
-2. Querying data using Graphql. Please see: [/app/routes/app.\_index.tsx](https://github.com/Shopify/shopify-app-template-react-router/blob/main/app/routes/app._index.tsx).
-3. Responding to webhooks. Please see [/app/routes/webhooks.tsx](https://github.com/Shopify/shopify-app-template-react-router/blob/main/app/routes/webhooks.app.uninstalled.tsx).
-
-Please read the [documentation for @shopify/shopify-app-react-router](https://shopify.dev/docs/api/shopify-app-react-router) to see what other API's are available.
-
-## Shopify Dev MCP
-
-This template is configured with the Shopify Dev MCP. This instructs [Cursor](https://cursor.com/), [GitHub Copilot](https://github.com/features/copilot) and [Claude Code](https://claude.com/product/claude-code) and [Google Gemini CLI](https://github.com/google-gemini/gemini-cli) to use the Shopify Dev MCP.
-
-For more information on the Shopify Dev MCP please read [the documentation](https://shopify.dev/docs/apps/build/devmcp).
-
-## Deployment
-
-### Application Storage
-
-This template uses [Prisma](https://www.prisma.io/) to store session data, by default using an [SQLite](https://www.sqlite.org/index.html) database.
-The database is defined as a Prisma schema in `prisma/schema.prisma`.
-
-This use of SQLite works in production if your app runs as a single instance.
-The database that works best for you depends on the data your app needs and how it is queried.
-Here’s a short list of databases providers that provide a free tier to get started:
-
-| Database   | Type             | Hosters                                                                                                                                                                                                                                    |
-| ---------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| MySQL      | SQL              | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-mysql), [Planet Scale](https://planetscale.com/), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Google Cloud SQL](https://cloud.google.com/sql/docs/mysql) |
-| PostgreSQL | SQL              | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-postgresql), [Amazon Aurora](https://aws.amazon.com/rds/aurora/), [Google Cloud SQL](https://cloud.google.com/sql/docs/postgres)                                   |
-| Redis      | Key-value        | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-redis), [Amazon MemoryDB](https://aws.amazon.com/memorydb/)                                                                                                        |
-| MongoDB    | NoSQL / Document | [Digital Ocean](https://www.digitalocean.com/products/managed-databases-mongodb), [MongoDB Atlas](https://www.mongodb.com/atlas/database)                                                                                                  |
-
-To use one of these, you can use a different [datasource provider](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#datasource) in your `schema.prisma` file, or a different [SessionStorage adapter package](https://github.com/Shopify/shopify-api-js/blob/main/packages/shopify-api/docs/guides/session-storage.md).
-
-### Build
-
-Build the app by running the command below with the package manager of your choice:
-
-Using yarn:
-
-```shell
-yarn build
-```
-
-Using npm:
-
-```shell
-npm run build
-```
-
-Using pnpm:
-
-```shell
-pnpm run build
-```
+Finding IDs (draft path only): in the app settings click **List templates** under "Find payment terms
+templates" to get `paymentTermsTemplateId`. The gateway ID is optional; for a manual payment method it is the
+`gid://shopify/PaymentGateway/...` of the method you created under Settings > Payments > Manual payment methods.
 
 ## Hosting
 
-When you're ready to set up your app in production, you can follow [our deployment documentation](https://shopify.dev/docs/apps/launch/deployment) to host it externally. From there, you have a few options:
+- **Docker (Fly/Railway/Render):** `docker build`, mount a volume at `/data` for sqlite, or point `DATABASE_URL`
+  at Postgres. `docker-start` runs `prisma generate && prisma migrate deploy` on boot.
+- **Postgres / Vercel:** edit `prisma/schema.prisma`: `provider = "postgresql"`, set `DATABASE_URL`, delete
+  `prisma/migrations`, run `npx prisma migrate dev --name init` once against Postgres, commit the new migration.
+  Serverless needs a pooled connection string.
 
-- [Google Cloud Run](https://shopify.dev/docs/apps/launch/deployment/deploy-to-google-cloud-run): This tutorial is written specifically for this example repo, and is compatible with the extended steps included in the subsequent [**Build your app**](tutorial) in the **Getting started** docs. It is the most detailed tutorial for taking a React Router-based Shopify app and deploying it to production. It includes configuring permissions and secrets, setting up a production database, and even hosting your apps behind a load balancer across multiple regions.
-- [Fly.io](https://fly.io/docs/js/shopify/): Leverages the Fly.io CLI to quickly launch Shopify apps to a single machine.
-- [Render](https://render.com/docs/deploy-shopify-app): This tutorial guides you through using Docker to deploy and install apps on a Dev store.
-- [Manual deployment guide](https://shopify.dev/docs/apps/launch/deployment/deploy-to-hosting-service): This resource provides general guidance on the requirements of deployment including environment variables, secrets, and persistent data.
+## Security notes
 
-When you reach the step for [setting up environment variables](https://shopify.dev/docs/apps/deployment/web#set-env-vars), you also need to set the variable `NODE_ENV=production`.
+- Every proxy request is verified by `authenticate.public.appProxy` (Shopify HMAC signature). `ALLOWED_SHOP`
+  pins the app to one shop.
+- Rate limits: 5 orders per 10 min per IP, 3 per hour per phone. Dedupe hash is claimed in the database before
+  the Shopify call so concurrent double taps cannot create two orders.
+- Logs never contain full phone numbers or addresses.
+- The optional order webhook is signed with HMAC-SHA256 (`X-HandPicked-Signature: sha256=...`, secret
+  `WHATSAPP_WEBHOOK_SECRET`).
+- Compliance webhooks are implemented: `customers/data_request` (acknowledged, answer from Shopify admin; the
+  app stores only normalised phone, first name, city and order name), `customers/redact`, `shop/redact`.
 
-## Gotchas / Troubleshooting
+## Testing
 
-### Database tables don't exist
-
-If you get an error like:
-
+```bash
+npm run test        # vitest: phone, cities, shipping, dedupe, risk, variant validation, order input shapes
+npm run typecheck
+npm run lint
 ```
-The table `main.Session` does not exist in the current database.
-```
+Manual: set Test mode, post from the theme or `curl` through the store domain `/apps/cod/health` (must return
+`{"ok":true}`), place an order, confirm tags `COD, quick-order, src:*, city:*` and a pending COD transaction.
 
-Create the database for Prisma. Run the `setup` script in `package.json` using `npm`, `yarn` or `pnpm`.
+## Known limits and phase 2
 
-### Navigating/redirecting breaks an embedded app
+- "New phone" means no earlier created COD order from this app for that number; it does not read the store's
+  full order history.
+- Meta Conversions API for cancelled COD orders is phase 2 (the theme fires the browser Pixel Purchase with
+  `eventID = orderName`).
+- No order-confirmation email is sent (`sendReceipt: false`); confirmation happens on WhatsApp.
 
-Embedded apps must maintain the user session, which can be tricky inside an iFrame. To avoid issues:
+## Rollback
 
-1. Use `Link` from `react-router` or `@shopify/polaris`. Do not use `<a>`.
-2. Use `redirect` returned from `authenticate.admin`. Do not use `redirect` from `react-router`
-3. Use `useSubmit` from `react-router`.
-
-This only applies if your app is embedded, which it will be by default.
-
-### Webhooks: shop-specific webhook subscriptions aren't updated
-
-If you are registering webhooks in the `afterAuth` hook, using `shopify.registerWebhooks`, you may find that your subscriptions aren't being updated.
-
-Instead of using the `afterAuth` hook declare app-specific webhooks in the `shopify.app.toml` file. This approach is easier since Shopify will automatically sync changes every time you run `deploy` (e.g: `npm run deploy`). Please read these guides to understand more:
-
-1. [app-specific vs shop-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-subscriptions)
-2. [Create a subscription tutorial](https://shopify.dev/docs/apps/build/webhooks/subscribe/get-started?deliveryMethod=https)
-
-If you do need shop-specific webhooks, keep in mind that the package calls `afterAuth` in 2 scenarios:
-
-- After installing the app
-- When an access token expires
-
-During normal development, the app won't need to re-authenticate most of the time, so shop-specific subscriptions aren't updated. To force your app to update the subscriptions, uninstall and reinstall the app. Revisiting the app will call the `afterAuth` hook.
-
-### Webhooks: Admin created webhook failing HMAC validation
-
-Webhooks subscriptions created in the [Shopify admin](https://help.shopify.com/en/manual/orders/notifications/webhooks) will fail HMAC validation. This is because the webhook payload is not signed with your app's secret key.
-
-The recommended solution is to use [app-specific webhooks](https://shopify.dev/docs/apps/build/webhooks/subscribe#app-specific-subscriptions) defined in your toml file instead. Test your webhooks by triggering events manually in the Shopify admin(e.g. Updating the product title to trigger a `PRODUCTS_UPDATE`).
-
-### Webhooks: Admin object undefined on webhook events triggered by the CLI
-
-When you trigger a webhook event using the Shopify CLI, the `admin` object will be `undefined`. This is because the CLI triggers an event with a valid, but non-existent, shop. The `admin` object is only available when the webhook is triggered by a shop that has installed the app. This is expected.
-
-Webhooks triggered by the CLI are intended for initial experimentation testing of your webhook configuration. For more information on how to test your webhooks, see the [Shopify CLI documentation](https://shopify.dev/docs/apps/tools/cli/commands#webhook-trigger).
-
-### Incorrect GraphQL Hints
-
-By default the [graphql.vscode-graphql](https://marketplace.visualstudio.com/items?itemName=GraphQL.vscode-graphql) extension for will assume that GraphQL queries or mutations are for the [Shopify Admin API](https://shopify.dev/docs/api/admin). This is a sensible default, but it may not be true if:
-
-1. You use another Shopify API such as the storefront API.
-2. You use a third party GraphQL API.
-
-If so, please update [.graphqlrc.ts](https://github.com/Shopify/shopify-app-template-react-router/blob/main/.graphqlrc.ts).
-
-### Using Defer & await for streaming responses
-
-By default the CLI uses a cloudflare tunnel. Unfortunately cloudflare tunnels wait for the Response stream to finish, then sends one chunk. This will not affect production.
-
-To test [streaming using await](https://reactrouter.com/api/components/Await#await) during local development we recommend [localhost based development](https://shopify.dev/docs/apps/build/cli-for-apps/networking-options#localhost-based-development).
-
-### "nbf" claim timestamp check failed
-
-This is because a JWT token is expired. If you are consistently getting this error, it could be that the clock on your machine is not in sync with the server. To fix this ensure you have enabled "Set time and date automatically" in the "Date and Time" settings on your computer.
-
-### Using MongoDB and Prisma
-
-If you choose to use MongoDB with Prisma, there are some gotchas in Prisma's MongoDB support to be aware of. Please see the [Prisma SessionStorage README](https://www.npmjs.com/package/@shopify/shopify-app-session-storage-prisma#mongodb).
-
-### Unable to require(`C:\...\query_engine-windows.dll.node`).
-
-Unable to require(`C:\...\query_engine-windows.dll.node`).
-The Prisma engines do not seem to be compatible with your system.
-
-query_engine-windows.dll.node is not a valid Win32 application.
-
-**Fix:** Set the environment variable:
-
-```shell
-PRISMA_CLIENT_ENGINE_TYPE=binary
-```
-
-This forces Prisma to use the binary engine mode, which runs the query engine as a separate process and can work via emulation on Windows ARM64.
-
-## Resources
-
-React Router:
-
-- [React Router docs](https://reactrouter.com/home)
-
-Shopify:
-
-- [Intro to Shopify apps](https://shopify.dev/docs/apps/getting-started)
-- [Shopify App React Router docs](https://shopify.dev/docs/api/shopify-app-react-router)
-- [Shopify CLI](https://shopify.dev/docs/apps/tools/cli)
-- [Shopify App Bridge](https://shopify.dev/docs/api/app-bridge-library).
-- [Polaris Web Components](https://shopify.dev/docs/api/app-home/polaris-web-components).
-- [App extensions](https://shopify.dev/docs/apps/app-extensions/list)
-- [Shopify Functions](https://shopify.dev/docs/api/functions)
-
-Internationalization:
-
-- [Internationalizing your app](https://shopify.dev/docs/apps/best-practices/internationalization/getting-started)
+Turn off **Accept quick orders** in the app (the theme falls back to `/checkout`, which still has native COD),
+or disable `cod_enabled` in theme settings. Uninstalling the app removes the proxy; existing orders are normal
+Shopify orders and are unaffected.

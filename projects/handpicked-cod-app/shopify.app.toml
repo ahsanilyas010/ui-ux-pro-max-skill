@@ -1,9 +1,12 @@
 # This file stores configurations for your Shopify app.
+name = "HandPicked COD Quick Order"
 client_id = ""
+application_url = "https://REPLACE_WITH_APP_URL"
+embedded = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "write_orders,write_draft_orders,read_products,read_inventory,read_orders,read_customers"
 
 [webhooks]
 api_version = "2026-10"
@@ -18,44 +21,25 @@ api_version = "2026-10"
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
-  # Mandatory compliance topic for public apps only
-  # See: https://shopify.dev/docs/apps/build/privacy-law-compliance
-  # [[webhooks.subscriptions]]
-  # uri = "/webhooks/customers/data_request"
-  # compliance_topics = ["customers/data_request"]
+  # Handled by: /app/routes/webhooks.orders.cancelled.tsx (refusal tracking / phone blocklist)
+  [[webhooks.subscriptions]]
+  topics = ["orders/cancelled"]
+  uri = "/webhooks/orders/cancelled"
 
-  # [[webhooks.subscriptions]]
-  # uri = "/webhooks/customers/redact"
-  # compliance_topics = ["customers/redact"]
+  # Privacy compliance topics
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/customers/data_request"
+  compliance_topics = ["customers/data_request"]
 
-  # [[webhooks.subscriptions]]
-  # uri = "/webhooks/shop/redact"
-  # compliance_topics = ["shop/redact"]
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/customers/redact"
+  compliance_topics = ["customers/redact"]
 
-# Only receive Events when a variant's price changes and the product status is active.
-# See: https://shopify.dev/docs/apps/build/events-webhooks
-[events]
-api_version = "2026-10"
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/shop/redact"
+  compliance_topics = ["shop/redact"]
 
-  [[events.subscription]]
-  handle = "product-price-change"
-  topic = "Product"
-  actions = ["update"]
-  triggers = ["product.variants.price", "product.variants.compareAtPrice"]
-  uri = "/webhooks/products/update"
-  query = """
-  query product_variant_price_change($productId: ID!, $variantsId: ID!) {
-    product(id: $productId) {
-      id
-      title
-      status
-    }
-    productVariant(id: $variantsId) {
-      id
-      title
-      price
-      compareAtPrice
-    }
-  }
-  """
-  query_filter = "product.status:'ACTIVE'"
+[app_proxy]
+url = "https://REPLACE_WITH_APP_URL/proxy"
+subpath = "cod"
+prefix = "apps"

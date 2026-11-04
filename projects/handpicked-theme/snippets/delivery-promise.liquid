@@ -1,0 +1,46 @@
+{%- comment -%}
+  Delivery promise for the product page.
+  Params: variant (variant, required) – the price decides free vs flat-rate delivery; product (optional)
+  Numbers come from settings.shipping_* — never hard-coded. The ETA line is city-tiered and can be
+  overwritten by the COD sheet via HP.emit('cod:city', { text }) (see product-form.js).
+  Exchange rule wording: 7-day free size exchange; refund only if not as described (no refund guarantee).
+{%- endcomment -%}
+{%- liquid
+  assign threshold = settings.shipping_free_threshold | default: 3000
+  assign flat_rate = settings.shipping_flat_rate | default: 250
+  assign threshold_cents = threshold | times: 100
+  assign is_free = false
+  if variant.price >= threshold_cents
+    assign is_free = true
+  endif
+  assign threshold_text = threshold | times: 100 | money_without_currency | replace: '.00', ''
+  assign fee_text = flat_rate | times: 100 | money_without_currency | replace: '.00', ''
+  assign eta_text = settings.shipping_eta | default: '2–4 working days'
+-%}
+<ul class="delivery" role="list" data-delivery>
+  <li class="delivery__row">
+    {%- render 'icon', name: 'truck', size: 18 -%}
+    <span>
+      {%- if is_free -%}
+        <strong>{{ 'products.product.delivery_free_item' | t }}</strong>
+      {%- else -%}
+        {{ 'products.product.delivery_fee_item' | t: fee: fee_text, amount: threshold_text }}
+      {%- endif -%}
+    </span>
+  </li>
+  <li class="delivery__row">
+    {%- render 'icon', name: 'clock', size: 18 -%}
+    <span data-delivery-tier>
+      <strong>{{ 'products.product.delivery_tier_main' | t: eta: eta_text }}</strong>
+      <span class="delivery__muted">{{ 'products.product.delivery_tier_other' | t: courier: settings.shipping_courier }}</span>
+    </span>
+  </li>
+  <li class="delivery__row">
+    {%- render 'icon', name: 'banknote', size: 18 -%}
+    <span>{{ 'products.product.pay_on_delivery' | t }}</span>
+  </li>
+  <li class="delivery__row">
+    {%- render 'icon', name: 'exchange', size: 18 -%}
+    <span>{{ 'products.product.exchange_rule' | t }}</span>
+  </li>
+</ul>
