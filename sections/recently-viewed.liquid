@@ -1,0 +1,37 @@
+{{ 'component-product.css' | asset_url | stylesheet_tag }}
+
+<section class="recent section section--border-top" data-recently-viewed data-section-id="{{ section.id }}" data-current-handle="{% if request.page_type == 'product' %}{{ product.handle }}{% endif %}" data-max="{{ section.settings.max_items | default: 8 }}" data-search-url="{{ routes.search_url }}" hidden>
+  <div class="container">
+    <div class="section__header">
+      <div class="section__heading">
+        <h2 class="section__title">
+          {%- if section.settings.heading != blank -%}{{ section.settings.heading | escape }}{%- else -%}{{ 'products.product.recently_viewed' | t }}{%- endif -%}
+        </h2>
+      </div>
+    </div>
+    <ul class="recent__list recs__list" role="list" data-recent-list>
+      {%- if search.performed -%}
+        {%- for item in search.results -%}
+          {%- if item.object_type == 'product' -%}
+            <li class="recs__item" data-handle="{{ item.handle }}">
+              {%- render 'product-card', product: item, priority: false, sizes: '(min-width: 990px) 25vw, 62vw', show_quick_add: false -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </div>
+  <script src="{{ 'recently-viewed.js' | asset_url }}" defer></script>
+</section>
+
+{% schema %}
+{
+  "name": "Recently viewed",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Recently viewed" },
+    { "type": "range", "id": "max_items", "label": "Products to show", "min": 4, "max": 12, "step": 1, "default": 8 }
+  ],
+  "presets": [{ "name": "Recently viewed" }]
+}
+{% endschema %}

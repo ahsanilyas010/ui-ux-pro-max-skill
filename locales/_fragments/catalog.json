@@ -1,0 +1,37 @@
+{
+  "products": {
+    "product": {
+      "quick_add_variant": "Add {{ title }} to cart",
+      "quick_add_sizes": "Choose a size to add to cart",
+      "choose_options": "Choose options"
+    },
+    "facets": {
+      "active_filters": "Active filters",
+      "remove_filter": "Remove filter {{ name }}",
+      "selected_count": "{{ count }} selected",
+      "pagination": "Pagination",
+      "page": "Page {{ page }}",
+      "loaded_more": "{{ count }} more products loaded",
+      "load_more_error": "Couldn’t load more products. Please try again.",
+      "update_error": "Couldn’t update the results. Please try again.",
+      "show_n_results": "Show {{ count }} results",
+      "show_n_results_one": "Show 1 result"
+    }
+  },
+  "collections": {
+    "products_count_one": "1 product",
+    "read_more": "More",
+    "read_less": "Less",
+    "brands_empty": "No brands to show yet.",
+    "brands_jump_label": "Jump to letter",
+    "brands_letter_group": "Brands starting with {{ letter }}"
+  },
+  "search": {
+    "all": "All",
+    "results_count_one": "1 result",
+    "result_types": "Result types",
+    "search_for": "Search for “{{ terms }}”",
+    "no_suggestions": "No matches yet. Press Enter to search the whole store.",
+    "error": "Search isn’t available right now. Press Enter to try the full search."
+  }
+}

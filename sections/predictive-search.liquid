@@ -1,0 +1,100 @@
+{%- comment -%}
+  Rendered by assets/predictive-search.js via the Section Rendering API:
+  {{ routes.predictive_search_url }}?q=…&resources[type]=product,collection,page,article&section_id=predictive-search
+  Markup contract: [data-predictive-results] holds role="option" links (ids ps-option-N); data-ps-count is the option total.
+{%- endcomment -%}
+{{ 'component-search.css' | asset_url | stylesheet_tag }}
+{%- if predictive_search.performed -%}
+  {%- liquid
+    assign terms = predictive_search.terms
+    assign products = predictive_search.resources.products
+    assign collections_found = predictive_search.resources.collections
+    assign pages_found = predictive_search.resources.pages
+    assign articles_found = predictive_search.resources.articles
+    assign queries_found = predictive_search.resources.queries
+    assign total = products.size | plus: collections_found.size | plus: pages_found.size | plus: articles_found.size
+    assign n = 0
+  -%}
+  <div data-predictive-results data-ps-count="{{ total }}" data-ps-terms="{{ terms | escape }}">
+    {%- if total == 0 -%}
+      <p class="predictive__empty text-sm u-text-muted">{{ 'search.no_suggestions' | t }}</p>
+    {%- else -%}
+      {%- if queries_found.size > 0 -%}
+        <div class="predictive__group" role="group" aria-label="{{ 'search.suggestions' | t }}">
+          <p class="predictive__heading eyebrow" aria-hidden="true">{{ 'search.suggestions' | t }}</p>
+          <ul class="predictive__list" role="presentation">
+            {%- for query in queries_found limit: 4 -%}
+              {%- assign n = n | plus: 1 -%}
+              <li role="presentation"><a class="predictive__item predictive__item--query" role="option" id="ps-option-{{ n }}" href="{{ query.url }}">{% render 'icon', name: 'search', size: 16 %}<span>{{ query.styled_text }}</span></a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if products.size > 0 -%}
+        <div class="predictive__group" role="group" aria-label="{{ 'search.products' | t }}">
+          <p class="predictive__heading eyebrow" aria-hidden="true">{{ 'search.products' | t }}</p>
+          <ul class="predictive__list" role="presentation">
+            {%- for product in products -%}
+              {%- assign n = n | plus: 1 -%}
+              <li role="presentation">
+                <a class="predictive__item predictive__item--product" role="option" id="ps-option-{{ n }}" href="{{ product.url }}">
+                  <span class="predictive__media media media--portrait">
+                    {%- if product.featured_image -%}
+                      {%- render 'image', image: product.featured_image, sizes: '56px', widths: '112,168', alt: product.title, class: 'predictive__img' -%}
+                    {%- endif -%}
+                  </span>
+                  <span class="predictive__text">
+                    {%- if product.vendor != blank -%}<span class="card__meta">{{ product.vendor | escape }}</span>{%- endif -%}
+                    <span class="predictive__title">{{ product.title | escape }}</span>
+                    {%- render 'price', product: product -%}
+                  </span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if collections_found.size > 0 -%}
+        <div class="predictive__group" role="group" aria-label="{{ 'search.collections' | t }}">
+          <p class="predictive__heading eyebrow" aria-hidden="true">{{ 'search.collections' | t }}</p>
+          <ul class="predictive__list" role="presentation">
+            {%- for collection in collections_found -%}
+              {%- assign n = n | plus: 1 -%}
+              <li role="presentation"><a class="predictive__item predictive__item--link" role="option" id="ps-option-{{ n }}" href="{{ collection.url }}"><span>{{ collection.title | escape }}</span>{% render 'icon', name: 'arrow-right', size: 14 %}</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if pages_found.size > 0 -%}
+        <div class="predictive__group" role="group" aria-label="{{ 'search.pages' | t }}">
+          <p class="predictive__heading eyebrow" aria-hidden="true">{{ 'search.pages' | t }}</p>
+          <ul class="predictive__list" role="presentation">
+            {%- for page in pages_found -%}
+              {%- assign n = n | plus: 1 -%}
+              <li role="presentation"><a class="predictive__item predictive__item--link" role="option" id="ps-option-{{ n }}" href="{{ page.url }}"><span>{{ page.title | escape }}</span>{% render 'icon', name: 'arrow-right', size: 14 %}</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if articles_found.size > 0 -%}
+        <div class="predictive__group" role="group" aria-label="{{ 'search.articles' | t }}">
+          <p class="predictive__heading eyebrow" aria-hidden="true">{{ 'search.articles' | t }}</p>
+          <ul class="predictive__list" role="presentation">
+            {%- for article in articles_found -%}
+              {%- assign n = n | plus: 1 -%}
+              <li role="presentation"><a class="predictive__item predictive__item--link" role="option" id="ps-option-{{ n }}" href="{{ article.url }}"><span>{{ article.title | escape }}</span>{% render 'icon', name: 'arrow-right', size: 14 %}</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{ "name": "Predictive search", "settings": [] }
+{% endschema %}

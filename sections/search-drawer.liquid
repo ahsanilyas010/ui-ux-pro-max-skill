@@ -1,34 +1,69 @@
-{%- comment -%} Foundation shell. Replaced by the predictive search implementation. {%- endcomment -%}
+{{ 'component-search.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign brand_menu = section.settings.brands_menu
+  if brand_menu == blank
+    assign brand_menu = linklists['main-menu']
+  endif
+  assign chip_links = brand_menu.links
+  for top in brand_menu.links
+    assign top_title = top.title | downcase
+    if top_title contains 'brand' and top.links.size > 0
+      assign chip_links = top.links
+      break
+    endif
+  endfor
+  assign count_many = 'search.results_count' | t: count: '[count]'
+  assign count_one = 'search.results_count_one' | t
+-%}
 <hp-drawer id="SearchDrawer" data-section-id="{{ section.id }}">
-  <div class="drawer search-drawer" role="presentation">
+  <div class="drawer drawer--wide search-drawer" role="presentation">
     <div class="drawer__overlay" data-drawer-close></div>
     <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="SearchDrawer-title">
       <div class="drawer__header">
         <span id="SearchDrawer-title" class="drawer__title">{{ 'search.title' | t }}</span>
         <button class="icon-button" type="button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
       </div>
-      <div class="drawer__body">
-        <form action="{{ routes.search_url }}" method="get" role="search" class="search-drawer__form">
+      <div class="drawer__body search-drawer__body" data-predictive-search data-section="predictive-search" data-count-many="{{ count_many | escape }}" data-count-one="{{ count_one | escape }}" data-error="{{ 'search.error' | t | escape }}">
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search-drawer__form" data-ps-form>
           <label class="visually-hidden" for="SearchDrawer-input">{{ 'search.title' | t }}</label>
-          <div class="input-group">
-            <input id="SearchDrawer-input" class="field__input" type="search" name="q" placeholder="{{ 'search.placeholder' | t }}" autocomplete="off" data-drawer-focus>
+          <div class="input-group search-drawer__group">
+            <input id="SearchDrawer-input" class="field__input" type="search" name="q" placeholder="{{ 'search.placeholder' | t }}" autocomplete="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="SearchDrawer-results" aria-autocomplete="list" data-drawer-focus data-ps-input>
             <input type="hidden" name="options[prefix]" value="last">
+            <button class="icon-button search-drawer__clear" type="button" hidden data-ps-clear aria-label="{{ 'search.clear' | t }}">{% render 'icon', name: 'close', size: 18 %}</button>
             <button class="button" type="submit" aria-label="{{ 'general.search' | t }}">{% render 'icon', name: 'search', size: 18 %}</button>
           </div>
         </form>
-        {%- if section.settings.brands_menu != blank -%}
-          <p class="eyebrow u-mt-6">{{ 'search.popular_brands' | t }}</p>
-          <div class="u-flex u-wrap u-gap-2 u-mt-4">
-            {%- for link in section.settings.brands_menu.links limit: 10 -%}
-              <a class="chip" href="{{ link.url }}">{{ link.title | escape }}</a>
+
+        <div class="search-drawer__suggest" data-ps-suggest>
+          {%- if chip_links.size > 0 -%}
+            <p class="eyebrow u-mt-6">{{ 'search.popular_brands' | t }}</p>
+            <ul class="search-chips u-mt-4" role="list">
+              {%- for link in chip_links limit: 10 -%}
+                <li><a class="chip" href="{{ link.url }}">{{ link.title | escape }}</a></li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+
+        <div id="SearchDrawer-results" class="search-drawer__results" role="listbox" aria-label="{{ 'search.title' | t }}" data-ps-results hidden></div>
+        <p class="visually-hidden" role="status" aria-live="polite" data-ps-status></p>
+
+        <template data-ps-skeleton>
+          <div class="predictive__skeleton" aria-hidden="true">
+            {%- for i in (1..4) -%}
+              <div class="predictive__skeleton-row"><span class="skeleton__media predictive__skeleton-media"></span><span class="predictive__skeleton-lines">{% render 'skeleton', variant: 'line', count: 2 %}</span></div>
             {%- endfor -%}
           </div>
-        {%- endif -%}
+        </template>
+      </div>
+      <div class="drawer__footer search-drawer__footer" hidden data-ps-footer>
+        <a class="button button--secondary button--full" href="{{ routes.search_url }}" data-ps-all>{{ 'search.view_all_results' | t }}</a>
       </div>
     </div>
   </div>
 </hp-drawer>
+<script src="{{ 'predictive-search.js' | asset_url }}" defer></script>
 {% schema %}
 { "name": "Search drawer", "tag": "div", "class": "shopify-section-search-drawer", "enabled_on": { "groups": ["custom.overlay"] },
-  "settings": [ { "type": "link_list", "id": "brands_menu", "label": "Popular brands menu (first 10 shown)" } ] }
+  "settings": [ { "type": "link_list", "id": "brands_menu", "label": "Popular brands menu (first 10 shown)", "info": "Defaults to the Brands items in the main menu." } ] }
 {% endschema %}

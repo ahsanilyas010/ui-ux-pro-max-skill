@@ -1,0 +1,121 @@
+{{ 'component-product-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-collection.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign per_page = section.settings.products_per_page | default: 24
+  assign use_filters = false
+  if section.settings.enable_filtering and collection.filters.size > 0
+    assign use_filters = true
+  endif
+  assign use_sort = section.settings.enable_sorting
+  assign sort_current = collection.sort_by | default: collection.default_sort_by
+  assign ratio_override = section.settings.image_ratio
+  if ratio_override == 'default'
+    assign ratio_override = nil
+  endif
+  assign card_sizes = '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  if section.settings.columns_desktop == '3'
+    assign card_sizes = '(min-width: 990px) 33vw, (min-width: 750px) 33vw, 50vw'
+  endif
+  assign active_count = 0
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_count = active_count | plus: 1
+      endif
+    else
+      assign active_count = active_count | plus: filter.active_values.size
+    endif
+  endfor
+-%}
+{%- paginate collection.products by per_page -%}
+  <section class="collection section section--tight" data-section-id="{{ section.id }}" data-facets-section="{{ section.id }}">
+    <div class="container">
+      {%- if use_filters or use_sort -%}
+        <div class="collection__toolbar">
+          {%- render 'facets', part: 'toolbar', filters: collection.filters, results_count: collection.products_count, sort_options: collection.sort_options, sort_by: sort_current, show_filters: use_filters, show_sort: use_sort, active_count: active_count -%}
+        </div>
+      {%- endif -%}
+
+      <div data-facets-part="active">
+        {%- if use_filters -%}
+          {%- render 'active-filters', filters: collection.filters, clear_url: collection.url -%}
+        {%- endif -%}
+      </div>
+
+      <div class="collection__results" data-facets-part="grid" aria-live="polite"{% if ratio_override != blank %} style="--card-ratio: {{ ratio_override }};"{% endif %}>
+        {%- if collection.products.size > 0 -%}
+          <ul class="product-grid{% if section.settings.columns_desktop == '3' %} product-grid--3{% endif %}" role="list" data-product-grid>
+            {%- for product in collection.products -%}
+              <li class="product-grid__item">
+                {%- liquid
+                  assign first_chunk = false
+                  if paginate.current_page == 1 and forloop.index <= 4
+                    assign first_chunk = true
+                  endif
+                -%}
+                {%- render 'product-card', product: product, priority: first_chunk, sizes: card_sizes, show_quick_add: true, show_vendor: section.settings.show_vendor, ratio: ratio_override -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- elsif active_count > 0 -%}
+          <div class="empty-state">
+            {%- render 'icon', name: 'filter', size: 40 -%}
+            <h2 class="h3">{{ 'products.facets.no_results' | t }}</h2>
+            <a class="button" href="{{ collection.url }}">{{ 'products.facets.no_results_cta' | t }}</a>
+          </div>
+        {%- else -%}
+          <div class="empty-state">
+            {%- render 'icon', name: 'bag', size: 40 -%}
+            <h2 class="h3">{{ 'collections.empty' | t }}</h2>
+            <a class="button" href="{{ section.settings.empty_cta_url | default: routes.all_products_collection_url }}">{{ 'collections.empty_cta' | t }}</a>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div data-facets-part="pager">
+        {%- if paginate.pages > 1 -%}
+          {%- if section.settings.enable_load_more -%}
+            {%- render 'load-more', paginate: paginate -%}
+          {%- else -%}
+            <nav class="pagination-nav" aria-label="{{ 'products.facets.pagination' | t }}">{{ paginate | default_pagination }}</nav>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+
+      <template data-facets-skeleton>
+        {%- for i in (1..8) -%}
+          <li class="product-grid__item">{%- render 'skeleton', variant: 'card' -%}</li>
+        {%- endfor -%}
+      </template>
+    </div>
+
+    {%- if use_filters -%}
+      {%- render 'facets', part: 'drawer', filters: collection.filters, results_count: collection.products_count, sort_options: collection.sort_options, sort_by: sort_current, show_sort: use_sort, form_url: collection.url, active_count: active_count -%}
+    {%- else -%}
+      <form id="FacetsForm" method="get" action="{{ collection.url }}" data-facets-form hidden></form>
+    {%- endif -%}
+  </section>
+{%- endpaginate -%}
+
+{%- if use_filters or use_sort -%}<script src="{{ 'facets.js' | asset_url }}" defer></script>{%- endif -%}
+{%- if section.settings.enable_load_more -%}<script src="{{ 'load-more.js' | asset_url }}" defer></script>{%- endif -%}
+{%- if settings.card_quick_add -%}<script src="{{ 'quick-add.js' | asset_url }}" defer></script>{%- endif -%}
+
+{% schema %}
+{
+  "name": "Collection products",
+  "tag": "div",
+  "class": "shopify-section-main-collection",
+  "settings": [
+    { "type": "range", "id": "products_per_page", "label": "Products per page", "min": 12, "max": 48, "step": 4, "default": 24 },
+    { "type": "select", "id": "columns_desktop", "label": "Columns on desktop", "options": [ { "value": "3", "label": "3" }, { "value": "4", "label": "4" } ], "default": "4" },
+    { "type": "select", "id": "image_ratio", "label": "Image ratio override", "info": "Leave on theme default unless this page needs a different frame.", "options": [
+      { "value": "default", "label": "Theme default" }, { "value": "3/4", "label": "Portrait 3:4" }, { "value": "4/5", "label": "Portrait 4:5" }, { "value": "1/1", "label": "Square" } ], "default": "default" },
+    { "type": "checkbox", "id": "show_vendor", "label": "Show brand name", "default": true },
+    { "type": "checkbox", "id": "enable_filtering", "label": "Enable filtering", "default": true },
+    { "type": "checkbox", "id": "enable_sorting", "label": "Enable sorting", "default": true },
+    { "type": "checkbox", "id": "enable_load_more", "label": "Load more instead of numbered pages", "default": true },
+    { "type": "url", "id": "empty_cta_url", "label": "Empty collection link", "info": "Where the button on an empty collection goes. Defaults to all products." }
+  ]
+}
+{% endschema %}

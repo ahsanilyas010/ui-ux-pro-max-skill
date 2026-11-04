@@ -1,0 +1,78 @@
+{{ 'component-collection.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign logo = collection.metafields.custom.brand_logo.value
+  assign is_brand = false
+  if logo != blank or collection.template_suffix == 'brand'
+    assign is_brand = true
+  endif
+  assign brand_menu = section.settings.brands_menu
+  if is_brand == false and brand_menu != blank
+    for top in brand_menu.links
+      assign top_title = top.title | downcase
+      if top_title contains 'brand'
+        for child in top.links
+          if child.url == collection.url
+            assign is_brand = true
+          endif
+        endfor
+      endif
+    endfor
+  endif
+  if is_brand and logo == blank
+    assign logo = collection.image
+  endif
+  assign description_text = collection.description | strip_html | strip_newlines | strip
+  assign long_description = false
+  if description_text.size > 170
+    assign long_description = true
+  endif
+-%}
+<section class="collection-banner section--tight{% if is_brand %} collection-banner--brand{% endif %}" data-section-id="{{ section.id }}">
+  <div class="container">
+    {%- if section.settings.show_breadcrumbs -%}
+      {%- render 'breadcrumbs', collection: collection -%}
+    {%- endif -%}
+    <div class="collection-banner__inner">
+      {%- if section.settings.show_logo and is_brand and logo != blank -%}
+        <div class="collection-banner__logo media media--contain" style="aspect-ratio: 3 / 2;">
+          {%- render 'image', image: logo, sizes: '120px', widths: '120,240,360', alt: collection.title -%}
+        </div>
+      {%- endif -%}
+      <div class="collection-banner__text">
+        {%- if is_brand -%}<p class="eyebrow eyebrow--accent">{{ 'general.brands' | t }}</p>{%- endif -%}
+        <h1 class="collection-banner__title h2">{{ collection.title | escape }}</h1>
+        <p class="collection-banner__count text-sm u-text-muted">
+          {%- if collection.products_count == 1 -%}{{ 'collections.products_count_one' | t }}{%- else -%}{{ 'collections.products_count' | t: count: collection.products_count }}{%- endif -%}
+        </p>
+        {%- if section.settings.show_description and description_text != blank -%}
+          {%- if long_description -%}
+            <details class="collection-banner__details">
+              <summary>
+                <span class="collection-banner__excerpt">{{ description_text | truncate: 170 }}</span>
+                <span class="collection-banner__toggle collection-banner__toggle--more">{{ 'collections.read_more' | t }}</span>
+                <span class="collection-banner__toggle collection-banner__toggle--less">{{ 'collections.read_less' | t }}</span>
+              </summary>
+              <div class="collection-banner__full rte">{{ collection.description }}</div>
+            </details>
+          {%- else -%}
+            <p class="collection-banner__excerpt-static">{{ description_text }}</p>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection banner",
+  "tag": "div",
+  "class": "shopify-section-collection-banner",
+  "settings": [
+    { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
+    { "type": "checkbox", "id": "show_description", "label": "Show description", "default": true },
+    { "type": "checkbox", "id": "show_logo", "label": "Show logo on brand collections", "default": true },
+    { "type": "link_list", "id": "brands_menu", "label": "Brands menu", "info": "Used to recognise brand collections. The children of a menu item titled Brands are used when present." }
+  ]
+}
+{% endschema %}
