@@ -2,7 +2,7 @@
 
 Hand-coded theme for handpicked.pk (Shopify Basic, PKR, Pakistan). Premium-outlet editorial direction:
 off-white / near-black / warm-gold accent, Playfair Display + Inter (Shopify-hosted), hairlines, 0–2px radius,
-mobile-first (375px), CSS-first motion, one-tap Cash-on-Delivery order form backed by `projects/handpicked-cod-app`.
+mobile-first (375px), CSS-first motion.
 
 ## Layout of the theme
 
@@ -42,7 +42,7 @@ assets/      base.css, global.js, component-<name>.css, <feature>.js
 - Images: `{% render 'image', image: img, sizes: '(min-width: 990px) 25vw, 50vw', widths: '360,540,720,900', class: 'card__img', priority: true %}`. Always inside a `.media` frame (`.media--card` for products) so CLS stays 0.
 - Icons: `{% render 'icon', name: 'bag', size: 20 %}` (names listed in `snippets/icon.liquid`). No emoji, no icon fonts.
 - Money: `{{ price | money }}` in Liquid, `HP.money(cents)` in JS.
-- Shipping/COD numbers come from `settings.shipping_free_threshold`, `settings.shipping_flat_rate`, `settings.shipping_eta`, `settings.cod_*` — never hard-code 3000/250.
+- Shipping/COD numbers come from `settings.shipping_free_threshold`, `settings.shipping_flat_rate`, `settings.shipping_eta`, — never hard-code 3000/250.
 - Trust row: `{% render 'trust-row', layout: 'row' | 'grid' | 'inline' %}`. Payment logos: `{% render 'payment-icons' %}`.
 
 **CSS**
@@ -72,16 +72,6 @@ assets/      base.css, global.js, component-<name>.css, <feature>.js
 - 16px base, visible focus (`:focus-visible` ring is global), `aria-expanded`/`aria-controls` on toggles, `role="list"` on styled lists, live regions for cart/COD feedback, `prefers-reduced-motion` respected (base.css does the heavy lifting).
 - First 4 product cards and the hero image `priority: true`; everything else lazy. Fonts preloaded in `theme.liquid`. Budget: JS ≤ 60KB gz on PLP/PDP, CSS ≤ 40KB gz total, LCP < 2.5s on 4G, CLS < 0.1.
 
-## COD quick-order contract (theme ↔ app)
-
-`POST {{ settings.cod_proxy_path }}/order` (same origin, JSON):
-```json
-{ "lines": [{ "variantId": 1234567890, "quantity": 1 }], "name": "…", "phone": "03XXXXXXXXX", "city": "Lahore",
-  "address": "…", "note": "", "email": "", "source": "pdp|drawer|cart", "website": "", "renderedAt": 1730000000000,
-  "cartToken": "…", "utm": { "source": "", "medium": "", "campaign": "" } }
-```
-Responses: `200 {ok, orderName, orderId, subtotal, shipping, total, eta, whatsapp}` · `422 {errors:{field:msg}}` · `410 {variants:[…]}` · `429` · `5xx`. Totals are in PKR minor units (paisa) to match Shopify cents.
-
 ## Tooling
 
 ```bash
@@ -101,11 +91,6 @@ Contracts other areas can rely on
   A late subscriber to `variant:change` can read it instead of waiting for the initial emit (fired once, `initial: true`, after DOMContentLoaded + 0ms).
 - `HP.emit('variant:change', { sectionId, productId, variant, quantity, initial? })` also fires on quantity change.
 - `HP.emit('pdp:updated', { sectionId, variant })` fires after price/stock/ATC/delivery parts were swapped.
-- COD slot: `<div class="product__cod-slot" data-cod-slot data-mode="product">` sits above the add-to-cart form, outside every swapped
-  `[data-dynamic]` part, so the COD form is never re-rendered on variant change. `.product__buy .button` is forced to min-height 52px so the COD button and Add to cart are equal height.
-- Sticky bar "Order on COD" button delegates a click to `[data-cod-slot] [data-cod-open], [data-cod-slot] button` (first match) and falls back to scrolling the buy block into view.
-  The COD form should mark its opener with `data-cod-open` (or be the first button in the slot).
-- Optional: the COD sheet can call `HP.emit('cod:city', { text: '4–7 working days to Multan' })` to rewrite the bold ETA in the delivery promise.
 - Lightbox and size-guide `<hp-drawer>`s are moved to `<body>` on init so `HP.setInert` can inert the rest of the page.
 
 Shared-file requests: none required.

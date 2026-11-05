@@ -55,13 +55,6 @@ ui-ux-pro-max-website/*
 cli/playwright-report/
 cli/test-results/
 
-# HandPicked COD app (projects/handpicked-cod-app)
-projects/handpicked-cod-app/node_modules/
-projects/handpicked-cod-app/build/
-projects/handpicked-cod-app/.react-router/
-projects/handpicked-cod-app/.env
-projects/handpicked-cod-app/prisma/*.sqlite
-projects/handpicked-cod-app/prisma/*.sqlite-journal
 projects/handpicked-cod-app/.cache/
 projects/handpicked-cod-app/.shopify/
 # HandPicked theme local tooling
