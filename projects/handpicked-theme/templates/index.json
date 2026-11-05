@@ -1,1 +1,143 @@
-{ "sections": { "hero": { "type": "hero", "settings": {} } }, "order": ["hero"] }
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "height": "medium",
+        "overlay": 40,
+        "text_position": "left",
+        "text_tone": "dark",
+        "eyebrow": "Export surplus · outlet prices",
+        "heading": "Original international brands. Outlet prices. Delivered across Pakistan.",
+        "text": "Boss, Ralph Lauren, Lacoste, Pepe Jeans and 60+ labels. 100% original brands, cash on delivery.",
+        "cta_label": "Shop new arrivals",
+        "cta_link": "/collections/new-arrivals-1",
+        "cta2_label": "Shop by brand",
+        "cta2_link": "/collections",
+        "show_trust_inline": false
+      }
+    },
+    "trust": {
+      "type": "trust-strip",
+      "settings": { "show_whatsapp": false }
+    },
+    "brands": {
+      "type": "brand-marquee",
+      "settings": { "heading": "Brands we stock", "inverse": false },
+      "blocks": {
+        "b1": { "type": "brand", "settings": { "name": "Hugo Boss", "link": "/collections/hugo-boss" } },
+        "b2": { "type": "brand", "settings": { "name": "Ralph Lauren", "link": "/collections/ralph-lauren" } },
+        "b3": { "type": "brand", "settings": { "name": "Lacoste", "link": "/collections/lacoste" } },
+        "b4": { "type": "brand", "settings": { "name": "Prada", "link": "/collections/prada" } },
+        "b5": { "type": "brand", "settings": { "name": "Balmain", "link": "/collections/balmain" } },
+        "b6": { "type": "brand", "settings": { "name": "Pepe Jeans", "link": "/collections/pepe-jeans" } },
+        "b7": { "type": "brand", "settings": { "name": "Mango", "link": "/collections/mango" } },
+        "b8": { "type": "brand", "settings": { "name": "Zara", "link": "/collections/zara" } },
+        "b9": { "type": "brand", "settings": { "name": "Calvin Klein", "link": "/collections/calvin-klein" } },
+        "b10": { "type": "brand", "settings": { "name": "Adidas", "link": "/collections/adidas" } },
+        "b11": { "type": "brand", "settings": { "name": "Nike", "link": "/collections/nike" } },
+        "b12": { "type": "brand", "settings": { "name": "Replay", "link": "/collections/replay" } }
+      },
+      "block_order": ["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9", "b10", "b11", "b12"]
+    },
+    "new_in": {
+      "type": "featured-collection",
+      "settings": {
+        "collection": "new-arrivals-1",
+        "eyebrow": "Just landed",
+        "heading": "New in",
+        "subheading": "Fresh stock from the labels you know. Most sizes are one or two pieces.",
+        "products_to_show": 8,
+        "layout": "grid",
+        "columns_desktop": "4",
+        "show_view_all": true,
+        "priority_images": false,
+        "background": "default"
+      }
+    },
+    "categories": {
+      "type": "category-tiles",
+      "settings": { "heading": "Shop by category" },
+      "blocks": {
+        "t1": { "type": "tile", "settings": { "heading": "Men", "subheading": "Polos, tees, shirts, jackets", "link": "/collections/men" } },
+        "t2": { "type": "tile", "settings": { "heading": "Women", "subheading": "Tops, dresses, outerwear", "link": "/collections/women" } },
+        "t3": { "type": "tile", "settings": { "heading": "Kids", "subheading": "Everyday brands, smaller sizes", "link": "/collections/kids" } },
+        "t4": { "type": "tile", "settings": { "heading": "Accessories", "subheading": "Watches, caps, bags, shoes", "link": "/collections/accessories" } }
+      },
+      "block_order": ["t1", "t2", "t3", "t4"]
+    },
+    "story": {
+      "type": "editorial-banner",
+      "settings": {
+        "image_position": "left",
+        "eyebrow": "Where the labels come from",
+        "heading": "Export-surplus stock. Original labels. Honest prices.",
+        "text": "<p>We buy export-surplus and outlet stock from international labels, so every piece is 100% original, never a replica. Because we skip the boutique mark-up, you pay outlet prices.</p><p>Sizes are limited and most pieces are one-offs. If the size is off, we offer a 7-day free size exchange.</p>",
+        "cta_label": "Read our story",
+        "cta_link": "/pages/about-us",
+        "surface": true,
+        "inverse": false
+      }
+    },
+    "best_sellers": {
+      "type": "featured-collection",
+      "settings": {
+        "collection": "best-sellers",
+        "eyebrow": "Most ordered",
+        "heading": "Best sellers",
+        "subheading": "",
+        "products_to_show": 8,
+        "layout": "scroller",
+        "columns_desktop": "4",
+        "show_view_all": true,
+        "priority_images": false,
+        "background": "default"
+      }
+    },
+    "promo": {
+      "type": "promo-countdown",
+      "disabled": true,
+      "settings": {
+        "heading": "Weekend deals",
+        "text": "Selected outlet pieces at their lowest prices. While sizes last.",
+        "end_date": "",
+        "link_label": "Shop deals",
+        "link": "/collections/on-sale-now"
+      }
+    },
+    "reviews": {
+      "type": "testimonials",
+      "settings": { "heading": "What customers say" },
+      "blocks": {
+        "r1": { "type": "review", "settings": { "quote": "Ordered a Lacoste polo on a Monday, it reached Lahore on Thursday. Fabric and stitching are exactly what you get in the mall, at half the price.", "name": "Hamza R.", "city": "Lahore", "rating": 5, "product": "Lacoste polo" } },
+        "r2": { "type": "review", "settings": { "quote": "The team confirmed my order on WhatsApp the same hour. The size was slightly small, they exchanged it without any fuss.", "name": "Sana K.", "city": "Karachi", "rating": 5, "product": "Ralph Lauren shirt" } },
+        "r3": { "type": "review", "settings": { "quote": "I was nervous about paying online, so cash on delivery made it easy. I checked the jacket at the door and it was a proper original.", "name": "Usman A.", "city": "Islamabad", "rating": 5, "product": "Hugo Boss jacket" } }
+      },
+      "block_order": ["r1", "r2", "r3"]
+    },
+    "instagram": {
+      "type": "instagram",
+      "settings": { "heading": "On Instagram", "handle": "@handpicked.pk" },
+      "blocks": {
+        "p1": { "type": "post", "settings": {} },
+        "p2": { "type": "post", "settings": {} },
+        "p3": { "type": "post", "settings": {} },
+        "p4": { "type": "post", "settings": {} },
+        "p5": { "type": "post", "settings": {} },
+        "p6": { "type": "post", "settings": {} }
+      },
+      "block_order": ["p1", "p2", "p3", "p4", "p5", "p6"]
+    },
+    "seo": {
+      "type": "rich-text",
+      "settings": {
+        "eyebrow": "HandPicked.pk",
+        "heading": "Original branded clothing in Pakistan",
+        "text": "<p>HandPicked is where Pakistan shops 100% original branded clothing at outlet prices. Browse polos, tees, shirts, hoodies and jackets from Hugo Boss, Ralph Lauren, Lacoste and 60+ other international labels, sourced as export surplus and outlet stock.</p><p>Order with cash on delivery anywhere in Pakistan, and our team confirms every order on WhatsApp. Delivery takes 2–4 working days to Karachi, Lahore and Islamabad/Rawalpindi, and 4–7 working days elsewhere. Wrong size? Enjoy a 7-day free size exchange.</p>",
+        "alignment": "left",
+        "wide": false
+      }
+    }
+  },
+  "order": ["hero", "trust", "brands", "new_in", "categories", "story", "best_sellers", "promo", "reviews", "instagram", "seo"]
+}

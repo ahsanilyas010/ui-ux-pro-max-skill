@@ -1,0 +1,7 @@
+{
+  "sections": {
+    "main": { "type": "main-cart", "settings": {} },
+    "upsells": { "type": "cart-upsells", "settings": {} }
+  },
+  "order": ["main", "upsells"]
+}

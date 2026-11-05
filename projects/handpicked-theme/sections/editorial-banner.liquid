@@ -1,0 +1,42 @@
+{{ 'component-home.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign variant = 'plain'
+  if s.inverse
+    assign variant = 'inverse'
+  elsif s.surface
+    assign variant = 'surface'
+  endif
+-%}
+<section class="editorial editorial--{{ variant }} editorial--{{ s.image_position }}" data-section-id="{{ section.id }}">
+  <div class="editorial__media media">
+    {% render 'image', image: s.image, sizes: '(min-width: 990px) 50vw, 100vw', widths: '540,720,900,1080,1296' %}
+  </div>
+  <div class="editorial__body" data-reveal>
+    {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+    {%- if s.heading != blank -%}<h2 class="h2">{{ s.heading | escape }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<div class="editorial__text rte">{{ s.text }}</div>{%- endif -%}
+    {%- if s.cta_label != blank and s.cta_link != blank -%}
+      <div class="editorial__actions"><a class="button" href="{{ s.cta_link }}">{{ s.cta_label | escape }}</a></div>
+    {%- endif -%}
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Editorial banner",
+  "tag": "div",
+  "class": "shopify-section-editorial-banner",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "select", "id": "image_position", "label": "Image position", "options": [ { "value": "left", "label": "Left" }, { "value": "right", "label": "Right" } ], "default": "left" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Where the labels come from" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Export-surplus stock. Original labels. Honest prices." },
+    { "type": "richtext", "id": "text", "label": "Text", "default": "<p>We buy export-surplus and outlet stock from international labels, so every piece is the real thing, never a replica. Because we skip the boutique mark-up, you pay outlet prices.</p><p>Sizes are limited and most pieces are one-offs. If it doesn’t fit, we offer a 7-day free size exchange.</p>" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Read our story" },
+    { "type": "url", "id": "cta_link", "label": "Button link" },
+    { "type": "checkbox", "id": "surface", "label": "Soft surface background", "default": true },
+    { "type": "checkbox", "id": "inverse", "label": "Dark background", "default": false }
+  ],
+  "presets": [ { "name": "Editorial banner" } ]
+}
+{% endschema %}
