@@ -15,8 +15,9 @@
         "cta2_label": "Shop by brand",
         "cta2_link": "/collections",
         "show_trust_inline": false,
-        "image": "shopify://shop_images/HP_Brand_hero-desktop.png",
-        "image_mobile": "shopify://shop_images/HP_Brand_hero-mobile.png"
+        "image": "shopify://shop_images/HP_Brand2_hero-desktop.png",
+        "image_mobile": "shopify://shop_images/HP_Brand2_hero-mobile.png",
+        "image_only": true
       }
     },
     "trust": {
@@ -150,7 +151,8 @@
     "categories": {
       "type": "category-tiles",
       "settings": {
-        "heading": "Shop by category"
+        "heading": "",
+        "image_only": true
       },
       "blocks": {
         "t1": {
@@ -159,7 +161,7 @@
             "heading": "Men",
             "subheading": "Polos, tees, shirts, jackets",
             "link": "/collections/men",
-            "image": "shopify://shop_images/HP_Brand_tile-men.png"
+            "image": "shopify://shop_images/HP_Brand2_tile-men.png"
           }
         },
         "t2": {
@@ -168,7 +170,7 @@
             "heading": "Women",
             "subheading": "Tops, dresses, outerwear",
             "link": "/collections/women",
-            "image": "shopify://shop_images/HP_Brand_tile-women.png"
+            "image": "shopify://shop_images/HP_Brand2_tile-women.png"
           }
         },
         "t3": {
@@ -177,7 +179,7 @@
             "heading": "Kids",
             "subheading": "Everyday brands, smaller sizes",
             "link": "/collections/kids",
-            "image": "shopify://shop_images/HP_Brand_tile-kids.png"
+            "image": "shopify://shop_images/HP_Brand2_tile-kids.png"
           }
         },
         "t4": {
@@ -186,7 +188,7 @@
             "heading": "Accessories",
             "subheading": "Watches, caps, bags, shoes",
             "link": "/collections/accessories",
-            "image": "shopify://shop_images/HP_Brand_tile-accessories.png"
+            "image": "shopify://shop_images/HP_Brand2_tile-accessories.png"
           }
         }
       },
@@ -208,7 +210,9 @@
         "cta_link": "/pages/about-us",
         "surface": true,
         "inverse": false,
-        "image": "shopify://shop_images/HP_Home_trust_wide.jpg"
+        "image": "shopify://shop_images/HP_Brand2_story-desktop.png",
+        "image_only": true,
+        "image_mobile": "shopify://shop_images/HP_Brand2_story-mobile.png"
       }
     },
     "best_sellers": {

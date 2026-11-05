@@ -9,8 +9,8 @@
   endif
 -%}
 <ul class="trust-row trust-row--{{ lay }}{% if class %} {{ class }}{% endif %}" role="list">
-  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'badge-check', size: 18 %}{% endif %}<span>{{ settings.trust_claim_1 | default: 'trust.original' | t }}</span></li>
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'badge-check', size: 18 %}{% endif %}<span>{%- assign _dk = 'trust.original' | t -%}{{ settings.trust_claim_1 | default: _dk }}</span></li>
   <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'truck', size: 18 %}{% endif %}<span>{{ settings.trust_claim_2 | default: 'Free delivery over PKR 3,000' }}</span></li>
-  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'banknote', size: 18 %}{% endif %}<span>{{ settings.trust_claim_3 | default: 'trust.cod' | t }}</span></li>
-  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'exchange', size: 18 %}{% endif %}<span>{{ settings.trust_claim_4 | default: 'trust.exchange' | t }}</span></li>
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'banknote', size: 18 %}{% endif %}<span>{%- assign _dk = 'trust.cod' | t -%}{{ settings.trust_claim_3 | default: _dk }}</span></li>
+  <li class="trust-row__item">{% if icons_on %}{% render 'icon', name: 'exchange', size: 18 %}{% endif %}<span>{%- assign _dk = 'trust.exchange' | t -%}{{ settings.trust_claim_4 | default: _dk }}</span></li>
 </ul>

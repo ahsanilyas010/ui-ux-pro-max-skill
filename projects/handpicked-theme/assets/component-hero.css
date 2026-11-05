@@ -37,3 +37,9 @@
   .hero__overlay { background: linear-gradient(90deg, color-mix(in srgb, var(--hero-tint) calc(var(--hero-overlay, 40) * 2%), transparent) 0%, color-mix(in srgb, var(--hero-tint) calc(var(--hero-overlay, 40) * 0.8%), transparent) 45%, transparent 80%); }
   .hero--center .hero__overlay { background: color-mix(in srgb, var(--hero-tint) calc(var(--hero-overlay, 40) * 1%), transparent); }
 }
+
+/* Image-only hero: the artwork carries the text; show it uncropped at its own ratio. */
+.hero--image-only { display: block; min-height: 0; background: var(--color-bg); }
+.hero--image-only .hero__link { display: block; }
+.hero--image-only .hero__media { position: static; inset: auto; z-index: auto; }
+.hero--image-only .hero__media > img { width: 100%; height: auto; object-fit: contain; }

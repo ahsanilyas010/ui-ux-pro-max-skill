@@ -44,8 +44,8 @@
 
       {%- if section.settings.show_newsletter -%}
         <div class="footer__col footer__newsletter">
-          <h2 class="footer__heading footer__heading--static">{{ section.settings.newsletter_heading | default: 'footer.newsletter_title' | t }}</h2>
-          <p class="footer__text">{{ section.settings.newsletter_text | default: 'footer.newsletter_text' | t }}</p>
+          <h2 class="footer__heading footer__heading--static">{%- assign _dk = 'footer.newsletter_title' | t -%}{{ section.settings.newsletter_heading | default: _dk }}</h2>
+          <p class="footer__text">{%- assign _dk = 'footer.newsletter_text' | t -%}{{ section.settings.newsletter_text | default: _dk }}</p>
           {%- form 'customer', class: 'footer__form', id: 'FooterNewsletter' -%}
             <input type="hidden" name="contact[tags]" value="newsletter,footer">
             {%- if form.posted_successfully? -%}

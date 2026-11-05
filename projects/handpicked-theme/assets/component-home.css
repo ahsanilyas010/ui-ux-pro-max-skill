@@ -120,3 +120,12 @@
 .insta__link:hover .media > img, .insta__link:focus-visible .media > img { transform: scale(1.04); }
 .insta__footer { display: flex; justify-content: center; margin-top: var(--space-5); }
 @media (min-width: 990px) { .insta__grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-2); } }
+
+/* Image-only tiles: artwork carries the label; keep text for screen readers. */
+.tiles--image-only .tile__content { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.editorial-image img { display: block; width: 100%; height: auto; }
+.editorial-image__link { display: block; }
+.editorial-image__mobile { display: block; }
+.editorial-image__desktop { display: none; }
+@media (min-width: 750px) { .editorial-image__mobile { display: none; } .editorial-image__desktop { display: block; } }

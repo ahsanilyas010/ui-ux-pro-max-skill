@@ -24,7 +24,7 @@
     </header>
 
     {%- if coll != blank and coll.products.size > 0 -%}
-      <ul class="{% if is_scroller %}fc__scroller{% else %}fc__grid product-grid{% endif %}" role="list"{% unless is_scroller %} data-reveal-stagger{% endunless %} aria-label="{{ s.heading | default: 'sections.featured_collection.products_label' | t | escape }}">
+      <ul class="{% if is_scroller %}fc__scroller{% else %}fc__grid product-grid{% endif %}" role="list"{% unless is_scroller %} data-reveal-stagger{% endunless %} aria-label="{%- assign _dk = 'sections.featured_collection.products_label' | t -%}{{ s.heading | default: _dk | escape }}">
         {%- for product in coll.products limit: limit_n -%}
           {%- liquid
             assign card_priority = false

@@ -6,7 +6,7 @@
 {%- if items.size > 0 -%}
 <section class="brands{% if s.inverse %} brands--inverse{% endif %}" data-section-id="{{ section.id }}" aria-label="{{ 'sections.brand_marquee.label' | t }}">
   <div class="container">
-    {%- assign heading_text = s.heading | default: 'sections.brand_marquee.default_heading' | t -%}
+    {%- assign _dk = 'sections.brand_marquee.default_heading' | t -%}{%- assign heading_text = s.heading | default: _dk -%}
     {%- if heading_text != blank -%}<p class="eyebrow brands__heading">{{ heading_text | escape }}</p>{%- endif -%}
   </div>
   <div class="marquee-wrap">

@@ -6,19 +6,22 @@
     assign has_mobile = true
   endif
   assign tone = s.text_tone | default: 'dark'
-  assign eyebrow_text = s.eyebrow | default: 'sections.hero.default_eyebrow' | t
-  assign cta_text = s.cta_label | default: 'sections.hero.default_cta' | t
+  assign _dk = 'sections.hero.default_eyebrow' | t
+  assign eyebrow_text = s.eyebrow | default: _dk
+  assign _dk = 'sections.hero.default_cta' | t
+  assign cta_text = s.cta_label | default: _dk
   assign cta_href = s.cta_link | default: '/collections/new-arrivals-1'
   assign cta2_href = s.cta2_link | default: routes.collections_url
   assign alt_mobile = s.image_mobile.alt | default: eyebrow_text
   assign alt_desktop = s.image.alt | default: eyebrow_text
 -%}
 <section
-  class="hero hero--h-{{ s.height }} hero--tone-{{ tone }} hero--{{ s.text_position }}{% unless has_mobile %} hero--single-image{% endunless %}"
+  class="hero{% if s.image_only %} hero--image-only{% endif %} hero--h-{{ s.height }} hero--tone-{{ tone }} hero--{{ s.text_position }}{% unless has_mobile %} hero--single-image{% endunless %}"
   data-section-id="{{ section.id }}"
   style="--hero-overlay: {{ s.overlay }};"
   aria-label="{{ shop.name | escape }}"
 >
+  {%- if s.image_only -%}<a class="hero__link" href="{{ cta_href }}" aria-label="{{ s.heading | default: eyebrow_text | escape }}">{%- endif -%}
   {%- if s.video != blank -%}
     <div class="hero__media media" data-hero-media>
       {{- s.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, controls: false, image_size: '1920x', class: 'hero__video' -}}
@@ -35,13 +38,14 @@
   {%- else -%}
     <div class="hero__media media" data-hero-media>{% render 'image', image: nil, class: 'hero__placeholder' %}</div>
   {%- endif -%}
+  {%- if s.image_only -%}</a>{%- else -%}
   <div class="hero__overlay" aria-hidden="true"></div>
 
   <div class="container hero__inner">
     <div class="hero__content" data-hero-content>
       {%- if eyebrow_text != blank -%}<p class="eyebrow hero__eyebrow">{{ eyebrow_text | escape }}</p>{%- endif -%}
-      <h2 class="h1 hero__heading">{{ s.heading | default: 'sections.hero.default_heading' | t }}</h2>
-      {%- assign body_text = s.text | default: 'sections.hero.default_text' | t -%}
+      <h2 class="h1 hero__heading">{%- assign _dk = 'sections.hero.default_heading' | t -%}{{ s.heading | default: _dk }}</h2>
+      {%- assign _dk = 'sections.hero.default_text' | t -%}{%- assign body_text = s.text | default: _dk -%}
       {%- if body_text != blank -%}<p class="hero__text">{{ body_text | escape }}</p>{%- endif -%}
       <div class="hero__actions">
         <a class="button button--lg" href="{{ cta_href }}">{{ cta_text | escape }}</a>
@@ -54,6 +58,7 @@
       {%- endif -%}
     </div>
   </div>
+  {%- endif -%}
 </section>
 {% schema %}
 {
@@ -68,6 +73,7 @@
     { "type": "select", "id": "height", "label": "Height", "options": [
       { "value": "small", "label": "Small (60%)" }, { "value": "medium", "label": "Medium (75%)" }, { "value": "large", "label": "Large (90%)" }, { "value": "full", "label": "Full screen" } ], "default": "medium" },
     { "type": "range", "id": "overlay", "label": "Overlay strength", "min": 0, "max": 60, "step": 5, "unit": "%", "default": 40 },
+    { "type": "checkbox", "id": "image_only", "label": "Image only (text is part of the artwork)", "info": "Hides the theme text and buttons; the whole image links to the button link.", "default": false },
     { "type": "header", "content": "Text" },
     { "type": "select", "id": "text_position", "label": "Text position", "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Centre" } ], "default": "left" },
     { "type": "select", "id": "text_tone", "label": "Text colour", "options": [ { "value": "dark", "label": "Dark text on a light wash" }, { "value": "light", "label": "Light text on a dark wash" } ], "default": "dark" },
