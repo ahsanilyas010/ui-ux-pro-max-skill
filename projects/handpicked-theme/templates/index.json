@@ -4,10 +4,10 @@
       "type": "hero",
       "settings": {
         "height": "medium",
-        "overlay": 45,
+        "overlay": 0,
         "text_position": "left",
-        "text_tone": "light",
-        "eyebrow": "Export surplus · outlet prices",
+        "text_tone": "dark",
+        "eyebrow": "Export surplus \u00b7 outlet prices",
         "heading": "Original international brands. Outlet prices. Delivered across Pakistan.",
         "text": "Boss, Ralph Lauren, Lacoste, Pepe Jeans and 60+ labels. 100% original brands, cash on delivery.",
         "cta_label": "Shop new arrivals",
@@ -15,8 +15,8 @@
         "cta2_label": "Shop by brand",
         "cta2_link": "/collections",
         "show_trust_inline": false,
-        "image": "shopify://shop_images/HP_Home_polos_desktop.jpg",
-        "image_mobile": "shopify://shop_images/HP_Home_polos_mobile.jpg"
+        "image": "shopify://shop_images/HP_Brand_hero-desktop.png",
+        "image_mobile": "shopify://shop_images/HP_Brand_hero-mobile.png"
       }
     },
     "trust": {
@@ -158,7 +158,8 @@
           "settings": {
             "heading": "Men",
             "subheading": "Polos, tees, shirts, jackets",
-            "link": "/collections/men"
+            "link": "/collections/men",
+            "image": "shopify://shop_images/HP_Brand_tile-men.png"
           }
         },
         "t2": {
@@ -166,7 +167,8 @@
           "settings": {
             "heading": "Women",
             "subheading": "Tops, dresses, outerwear",
-            "link": "/collections/women"
+            "link": "/collections/women",
+            "image": "shopify://shop_images/HP_Brand_tile-women.png"
           }
         },
         "t3": {
@@ -174,7 +176,8 @@
           "settings": {
             "heading": "Kids",
             "subheading": "Everyday brands, smaller sizes",
-            "link": "/collections/kids"
+            "link": "/collections/kids",
+            "image": "shopify://shop_images/HP_Brand_tile-kids.png"
           }
         },
         "t4": {
@@ -182,7 +185,8 @@
           "settings": {
             "heading": "Accessories",
             "subheading": "Watches, caps, bags, shoes",
-            "link": "/collections/accessories"
+            "link": "/collections/accessories",
+            "image": "shopify://shop_images/HP_Brand_tile-accessories.png"
           }
         }
       },
@@ -238,7 +242,7 @@
       "settings": {
         "eyebrow": "HandPicked.pk",
         "heading": "Original branded clothing in Pakistan",
-        "text": "<p>HandPicked is where Pakistan shops 100% original branded clothing at outlet prices. Browse polos, tees, shirts, hoodies and jackets from Hugo Boss, Ralph Lauren, Lacoste and 60+ other international labels, sourced as export surplus and outlet stock.</p><p>Order with cash on delivery anywhere in Pakistan, and our team confirms every order on WhatsApp. Delivery takes 2–4 working days to Karachi, Lahore and Islamabad/Rawalpindi, and 4–7 working days elsewhere. Wrong size? Enjoy a 7-day free size exchange.</p>",
+        "text": "<p>HandPicked is where Pakistan shops 100% original branded clothing at outlet prices. Browse polos, tees, shirts, hoodies and jackets from Hugo Boss, Ralph Lauren, Lacoste and 60+ other international labels, sourced as export surplus and outlet stock.</p><p>Order with cash on delivery anywhere in Pakistan, and our team confirms every order on WhatsApp. Delivery takes 2\u20134 working days to Karachi, Lahore and Islamabad/Rawalpindi, and 4\u20137 working days elsewhere. Wrong size? Enjoy a 7-day free size exchange.</p>",
         "alignment": "left",
         "wide": false
       }
