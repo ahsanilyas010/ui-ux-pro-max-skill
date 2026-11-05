@@ -46,15 +46,6 @@
     "pay_show_raast": true,
     "pay_show_cards": true,
     "pay_show_wallets": false,
-    "cod_enabled": true,
-    "cod_proxy_path": "/apps/cod",
-    "cod_on_product": true,
-    "cod_in_cart": true,
-    "cod_button_label": "Order on Cash on Delivery",
-    "cod_consent_text": "We’ll confirm your order on WhatsApp before dispatch.",
-    "cod_success_text": "Order placed. Keep your phone on — we’ll confirm on WhatsApp, then deliver in 2–4 working days.",
-    "cod_max_quantity": 5,
-    "cod_test_badge": false,
     "trust_claim_1": "100% original brands",
     "trust_claim_2": "Free delivery over PKR 3,000",
     "trust_claim_3": "Cash on delivery nationwide",
@@ -68,6 +59,7 @@
     "seo_emit_jsonld": true,
     "seo_default_description": "HandPicked.pk — 100% original international brands at outlet prices. Cash on delivery across Pakistan.",
     "favicon": "shopify://shop_images/favicon-32x32.png",
-    "social_instagram": "https://www.instagram.com/hand.picked.pk"
+    "social_instagram": "https://www.instagram.com/hand.picked.pk",
+    "max_quantity": 5
   }
 }

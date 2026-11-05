@@ -62,12 +62,6 @@
         eta: {{ settings.shipping_eta | json }},
         courier: {{ settings.shipping_courier | json }}
       },
-      cod: {
-        enabled: {{ settings.cod_enabled | json }},
-        proxyPath: {{ settings.cod_proxy_path | default: '/apps/cod' | json }},
-        maxQuantity: {{ settings.cod_max_quantity | default: 5 }},
-        testBadge: {{ settings.cod_test_badge | json }}
-      },
       motion: {
         level: {{ settings.motion_level | json }},
         gsapHome: {{ settings.motion_gsap_home | json }},

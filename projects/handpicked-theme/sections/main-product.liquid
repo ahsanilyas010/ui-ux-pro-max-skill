@@ -4,7 +4,7 @@
   assign current_variant = product.selected_or_first_available_variant
   assign form_id = 'product-form-' | append: section.id
   assign low_limit = settings.card_low_stock_threshold | default: 5
-  assign max_qty = settings.cod_max_quantity | default: 5
+  assign max_qty = settings.max_quantity | default: 5
   assign stock_left = 0
   assign stock_tracked = false
   if current_variant.inventory_management == 'shopify' and current_variant.inventory_policy == 'deny'
@@ -13,10 +13,6 @@
     if stock_left < max_qty and stock_left > 0
       assign max_qty = stock_left
     endif
-  endif
-  assign cod_on = false
-  if settings.cod_enabled and settings.cod_on_product
-    assign cod_on = true
   endif
   assign has_size_option = false
   for option in product.options
@@ -121,13 +117,10 @@
 
             {%- when 'buy_buttons' -%}
               <div class="product__block product__buy" data-buy-block {{ block.shopify_attributes }}>
-                {%- if cod_on -%}
-                  {% render 'cod-form', mode: 'product', product: product, section_id: section.id %}
-                {%- endif -%}
                 {%- form 'product', product, id: form_id, class: 'product__form', novalidate: 'novalidate' -%}
                   <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
                   <div class="product__atc" data-dynamic="atc">
-                    <button type="submit" name="add" class="button button--lg button--full{% if cod_on %} button--secondary{% endif %}" data-add-to-cart data-label-add="{{ 'products.product.add_to_cart' | t | escape }}" data-label-added="{{ 'products.product.added' | t | escape }}"{% unless current_variant.available %} disabled aria-disabled="true"{% endunless %}>
+                    <button type="submit" name="add" class="button button--lg button--full" data-add-to-cart data-label-add="{{ 'products.product.add_to_cart' | t | escape }}" data-label-added="{{ 'products.product.added' | t | escape }}"{% unless current_variant.available %} disabled aria-disabled="true"{% endunless %}>
                       {%- render 'icon', name: 'bag', size: 18 -%}
                       <span data-add-label>{%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}</span>
                     </button>

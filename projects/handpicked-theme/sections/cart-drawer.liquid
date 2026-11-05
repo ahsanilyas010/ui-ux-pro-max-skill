@@ -157,10 +157,6 @@
               <p class="cart-footer__save text-sm">{{ 'cart.you_save' | t: amount: savings_text }}</p>
             {%- endif -%}
 
-            {%- if settings.cod_enabled and settings.cod_in_cart -%}
-              {% render 'cod-form', mode: 'cart', section_id: section.id %}
-            {%- endif -%}
-
             <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm" novalidate>
               <button type="submit" name="checkout" class="button button--secondary button--full button--lg">{{ 'cart.checkout' | t }}</button>
             </form>

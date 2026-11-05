@@ -14,10 +14,6 @@
       assign size_index = forloop.index0
     endif
   endfor
-  assign cod_on = false
-  if settings.cod_enabled and settings.cod_on_product
-    assign cod_on = true
-  endif
   assign thumb = variant.featured_media.preview_image | default: product.featured_media.preview_image
 -%}
 <div class="sticky-atc" data-sticky-atc data-size-index="{{ size_index }}" aria-hidden="true" inert>
@@ -40,11 +36,8 @@
           {%- endfor -%}
         </select>
       {%- endif -%}
-      {%- if cod_on -%}
-        <button type="button" class="button sticky-atc__cod" data-sticky-cod>{% if settings.cod_button_label != blank %}{{ settings.cod_button_label }}{% else %}{{ 'cod.title' | t }}{% endif %}</button>
-      {%- endif -%}
       <div class="sticky-atc__add-wrap" data-dynamic="sticky-atc">
-        <button type="button" class="button{% if cod_on %} button--secondary{% endif %} sticky-atc__add" data-sticky-add{% unless variant.available %} disabled aria-disabled="true"{% endunless %}>
+        <button type="button" class="button sticky-atc__add" data-sticky-add{% unless variant.available %} disabled aria-disabled="true"{% endunless %}>
           {%- if variant.available -%}{{ 'products.product.sticky_add' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
         </button>
       </div>

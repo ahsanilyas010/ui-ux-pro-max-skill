@@ -111,17 +111,6 @@
       sticky.addEventListener('click', (e) => {
         const add = e.target.closest('[data-sticky-add]');
         if (add && !add.disabled) { addToCart([add]); return; }
-        const cod = e.target.closest('[data-sticky-cod]');
-        if (cod) {
-          // Delegate to the in-flow COD trigger; if nothing opens, bring the buy block into view.
-          const trigger = section.querySelector('[data-cod-slot] [data-cod-open], [data-cod-slot] button');
-          if (trigger) trigger.click();
-          if (buyBlock) {
-            setTimeout(() => {
-              if (!document.querySelector('hp-drawer .drawer.is-open')) buyBlock.scrollIntoView({ behavior: HP.prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' });
-            }, 120);
-          }
-        }
       });
     }
 
@@ -172,12 +161,6 @@
       HP.on('pdp:updated', check);
     }
 
-    /* ---------- Delivery tier hook (COD sheet can pass the selected city's promise) ---------- */
-    HP.on('cod:city', (d) => {
-      if (!d || typeof d.text !== 'string') return;
-      const el = section.querySelector('[data-delivery-tier] strong');
-      if (el) el.textContent = d.text;
-    });
   }
 
   function boot() {

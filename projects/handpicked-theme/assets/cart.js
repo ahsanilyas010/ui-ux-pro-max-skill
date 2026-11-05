@@ -93,14 +93,7 @@
       var src = fresh.querySelector('[data-cart-root][data-section-id="' + id + '"]') || fresh.querySelector('[data-cart-root]');
       if (!src) return;
       var memo = rememberFocus(root);
-      var oldSlot = root.querySelector('[data-cod-slot]');
-      var keepSlot = oldSlot && oldSlot.childNodes.length ? oldSlot : null;
-      if (keepSlot && keepSlot.parentNode) keepSlot.parentNode.removeChild(keepSlot);
       root.innerHTML = src.innerHTML;
-      if (keepSlot) {
-        var fresh_slot = root.querySelector('[data-cod-slot]');
-        if (fresh_slot) fresh_slot.parentNode.replaceChild(keepSlot, fresh_slot);
-      }
       postRender(root, memo);
     }
 
