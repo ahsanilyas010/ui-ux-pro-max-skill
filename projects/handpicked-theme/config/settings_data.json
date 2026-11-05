@@ -60,12 +60,14 @@
     "trust_claim_3": "Cash on delivery nationwide",
     "trust_claim_4": "7-day easy exchange",
     "whatsapp_number": "923422221633",
-    "support_email": "hello@assorted.group",
+    "support_email": "hello@handpicked.pk",
     "social_proof_enabled": false,
     "motion_level": "standard",
     "motion_gsap_home": true,
     "marquee_speed": 30,
     "seo_emit_jsonld": true,
-    "seo_default_description": "HandPicked.pk — 100% original international brands at outlet prices. Cash on delivery across Pakistan."
+    "seo_default_description": "HandPicked.pk — 100% original international brands at outlet prices. Cash on delivery across Pakistan.",
+    "favicon": "shopify://shop_images/favicon-32x32.png",
+    "social_instagram": "https://www.instagram.com/hand.picked.pk"
   }
 }

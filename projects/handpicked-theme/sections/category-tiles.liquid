@@ -18,8 +18,16 @@
       {%- for block in items -%}
         <li {{ block.shopify_attributes }}>
           <a class="tile" href="{{ block.settings.link | default: routes.collections_url }}">
-            <div class="media">
-              {% render 'image', image: block.settings.image, sizes: '(min-width: 990px) 25vw, 50vw', widths: '360,540,720,900', alt: block.settings.heading %}
+            {%- liquid
+              assign tile_image = block.settings.image
+              if tile_image == blank
+                assign link_handle = block.settings.link | split: '/collections/' | last | split: '?' | first
+                assign linked = collections[link_handle]
+                assign tile_image = linked.image
+              endif
+            -%}
+            <div class="media media--portrait">
+              {% render 'image', image: tile_image, sizes: '(min-width: 990px) 25vw, 50vw', widths: '360,540,720,900', alt: block.settings.heading %}
             </div>
             <div class="tile__content">
               <span class="tile__title">{{ block.settings.heading | escape }}</span>
