@@ -116,7 +116,40 @@
       "badge_selling_fast": "Selling fast",
       "badge_original": "Original",
       "pay_on_delivery": "Pay cash when it arrives",
-      "ask_on_whatsapp": "Ask about this item on WhatsApp"
+      "ask_on_whatsapp": "Ask about this item on WhatsApp",
+      "quick_add_variant": "Add {{ title }} to cart",
+      "quick_add_sizes": "Choose a size to add to cart",
+      "choose_options": "Choose options",
+      "cod_available": "Cash on delivery available",
+      "delivery_free_item": "Free delivery on this item",
+      "delivery_fee_item": "Delivery PKR {{ fee }} · free over PKR {{ amount }}",
+      "delivery_tier_main": "{{ eta }} to Karachi, Lahore and Islamabad/Rawalpindi",
+      "delivery_tier_other": "4–7 working days elsewhere · via {{ courier }}",
+      "exchange_rule": "7-day free size exchange; refund only if not as described",
+      "n_left": "{{ count }} left",
+      "sold_out_option": "(sold out)",
+      "type": "Type",
+      "gallery_label": "Product images",
+      "image_zoom": "Zoom image {{ index }} of {{ total }}",
+      "zoom_toggle": "Toggle zoom",
+      "share_copied": "Link copied",
+      "read_more": "Read more",
+      "read_less": "Show less",
+      "whatsapp_message": "Hi HandPicked, I have a question about {{ title }}: {{ url }}",
+      "authenticity_default": "Every piece is original export-surplus or outlet stock from the brand’s own production. No replicas, ever. If you ever doubt a piece, message us on WhatsApp and we’ll sort it out.",
+      "sticky_add": "Add",
+      "sticky_size": "Size",
+      "size_guide_empty": "The size chart for this item is on its way. Message us on WhatsApp and we’ll send exact measurements.",
+      "size_guide_units": "Units",
+      "size_guide_cm": "cm",
+      "size_guide_in": "in",
+      "measuring_title": "How to measure",
+      "measuring_tip_1": "Chest: measure around the fullest part, just under the arms.",
+      "measuring_tip_2": "Waist: around your natural waistline, tape snug but not tight.",
+      "measuring_tip_3": "Length: from the highest point of the shoulder down to the hem.",
+      "measuring_tip_4": "Between two sizes? Size up for a relaxed fit, or ask us on WhatsApp.",
+      "recs_error": "Couldn’t load suggestions.",
+      "recs_scroll": "Scroll to see more products"
     },
     "facets": {
       "filter": "Filter",
@@ -138,7 +171,17 @@
       "in_stock_only": "In stock only",
       "load_more": "Load more",
       "showing": "Showing {{ shown }} of {{ total }}",
-      "end_of_results": "You’ve seen everything in this collection."
+      "end_of_results": "You’ve seen everything in this collection.",
+      "active_filters": "Active filters",
+      "remove_filter": "Remove filter {{ name }}",
+      "selected_count": "{{ count }} selected",
+      "pagination": "Pagination",
+      "page": "Page {{ page }}",
+      "loaded_more": "{{ count }} more products loaded",
+      "load_more_error": "Couldn’t load more products. Please try again.",
+      "update_error": "Couldn’t update the results. Please try again.",
+      "show_n_results": "Show {{ count }} results",
+      "show_n_results_one": "Show 1 result"
     }
   },
   "collections": {
@@ -150,7 +193,13 @@
     "products_count": "{{ count }} products",
     "empty": "This collection is empty right now.",
     "empty_cta": "Browse new arrivals",
-    "jump_to": "Jump to"
+    "jump_to": "Jump to",
+    "products_count_one": "1 product",
+    "read_more": "More",
+    "read_less": "Less",
+    "brands_empty": "No brands to show yet.",
+    "brands_jump_label": "Jump to letter",
+    "brands_letter_group": "Brands starting with {{ letter }}"
   },
   "cart": {
     "title": "Your cart",
@@ -179,7 +228,24 @@
     "free_shipping_achieved": "You’ve unlocked free delivery",
     "upsell_title": "Complete the look",
     "qty_error": "Only {{ count }} available",
-    "generic_error": "Something went wrong updating your cart. Please try again."
+    "generic_error": "Something went wrong updating your cart. Please try again.",
+    "updated": "Cart updated",
+    "removed": "Removed {{ title }}",
+    "restored": "Item restored to your cart",
+    "undo": "Undo",
+    "view_cart": "View cart",
+    "line_total": "Line total",
+    "quantity_for": "Quantity for {{ title }}",
+    "items_heading": "Items in your cart",
+    "summary_title": "Order summary",
+    "col_product": "Product",
+    "col_quantity": "Quantity",
+    "col_total": "Total",
+    "upsell_add": "Add",
+    "upsell_add_label": "Add {{ title }} to cart",
+    "upsell_size_label": "Size for {{ title }}",
+    "addon_title": "Add one more for free delivery",
+    "addon_hint": "Pieces that take you past the free delivery line (PKR {{ amount }} to go)."
   },
   "cod": {
     "title": "Order on Cash on Delivery",
@@ -218,7 +284,24 @@
     "error_duplicate": "Looks like this order was already placed.",
     "retry": "Try again",
     "use_checkout": "Use standard checkout instead",
-    "test_mode": "Test mode"
+    "test_mode": "Test mode",
+    "or_add_to_cart": "or add to cart and keep shopping",
+    "summary_title": "Your order",
+    "qty": "Qty {{ count }}",
+    "city_not_listed": "Not in the list? Just type your city.",
+    "eta_city": "{{ eta }} to {{ city }}",
+    "eta_other": "4–7 working days",
+    "error_email": "Enter a valid email or leave it blank.",
+    "sold_out_qty": "Only {{ count }} left in this size.",
+    "addon_view": "View {{ title }}",
+    "advance_title": "Order received. Advance needed",
+    "advance_body": "For first orders of this value we ask for a small advance via Easypaisa, JazzCash or Raast. Send the payment screenshot on WhatsApp and we will dispatch right away.",
+    "success_confirm_wa": "Confirm on WhatsApp",
+    "success_receipt_wa": "Send payment receipt on WhatsApp",
+    "wa_confirm_text": "Hi HandPicked, please confirm my order {{ order }} (PKR {{ total }}).",
+    "wa_receipt_text": "Hi HandPicked, here is my advance payment receipt for order {{ order }}.",
+    "trust_exchange": "7-day free size exchange",
+    "prepaid_line": "Prefer to pay now? Bank transfer, Raast or card are available at standard checkout."
   },
   "search": {
     "title": "Search",
@@ -234,7 +317,13 @@
     "popular_brands": "Popular brands",
     "view_all_results": "View all results",
     "results_count": "{{ count }} results",
-    "clear": "Clear search"
+    "clear": "Clear search",
+    "all": "All",
+    "results_count_one": "1 result",
+    "result_types": "Result types",
+    "search_for": "Search for “{{ terms }}”",
+    "no_suggestions": "No matches yet. Press Enter to search the whole store.",
+    "error": "Search isn’t available right now. Press Enter to try the full search."
   },
   "customer": {
     "account": {
@@ -351,11 +440,20 @@
       "post": "Post comment",
       "moderated": "Please note, comments need to be approved before they are published.",
       "success": "Your comment was posted successfully.",
-      "success_moderated": "Your comment was posted successfully. We will publish it in a little while."
+      "success_moderated": "Your comment was posted successfully. We will publish it in a little while.",
+      "published": "Published {{ date }}",
+      "share_facebook": "Share on Facebook",
+      "share_whatsapp": "Share on WhatsApp",
+      "share_x": "Share on X",
+      "comments_title": "Comments",
+      "tags": "Topics"
     },
     "blog": {
       "all": "All posts",
-      "tags": "Topics"
+      "tags": "Topics",
+      "empty": "No articles yet. Check back soon.",
+      "filter_label": "Filter articles by topic",
+      "pagination": "Blog pagination"
     }
   },
   "page_404": {
@@ -389,14 +487,47 @@
       "default_eyebrow": "Export surplus · outlet prices",
       "default_heading": "Original international brands. Outlet prices. Delivered across Pakistan.",
       "default_text": "Boss, Ralph Lauren, Lacoste, Pepe Jeans and 60+ labels — 100% original, cash on delivery.",
-      "default_cta": "Shop new arrivals"
+      "default_cta": "Shop new arrivals",
+      "default_secondary_cta": "Shop by brand"
     },
     "brand_marquee": {
-      "default_heading": "Brands we stock"
+      "default_heading": "Brands we stock",
+      "label": "Brands we stock"
     },
     "social_proof": {
       "recent_order": "{{ name }} from {{ city }} ordered {{ product }}",
       "time_ago": "{{ time }} ago"
+    },
+    "trust_strip": {
+      "label": "Why shop with HandPicked",
+      "whatsapp": "Chat with us on WhatsApp"
+    },
+    "featured_collection": {
+      "view_all": "View all",
+      "empty": "Add products to this collection to show them here.",
+      "products_label": "Products"
+    },
+    "countdown": {
+      "ends_in": "Ends in",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Min",
+      "seconds": "Sec",
+      "label": "Time left on this offer"
+    },
+    "testimonials": {
+      "label": "Customer reviews",
+      "bought": "Bought: {{ product }}"
+    },
+    "instagram": {
+      "follow": "Follow {{ handle }}",
+      "post_label": "View post on Instagram"
+    },
+    "faq": {
+      "label": "Frequently asked questions"
+    },
+    "about": {
+      "values_label": "What we stand for"
     }
   },
   "gift_cards": {
@@ -406,6 +537,11 @@
       "expired": "This gift card is no longer valid.",
       "remaining_html": "Balance: {{ balance }}",
       "add_to_apple_wallet": "Add to Apple Wallet"
+    }
+  },
+  "pages": {
+    "page": {
+      "contact_cta": "Questions? Message us on WhatsApp"
     }
   }
 }
