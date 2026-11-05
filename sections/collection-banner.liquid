@@ -21,6 +21,12 @@
   if is_brand and logo == blank
     assign logo = collection.image
   endif
+  assign banner = collection.image
+  assign has_banner = false
+  if banner != blank and banner.aspect_ratio > 2.2 and section.settings.show_banner_image
+    assign has_banner = true
+    assign logo = collection.metafields.custom.brand_logo.value
+  endif
   assign description_text = collection.description | strip_html | strip_newlines | strip
   assign long_description = false
   if description_text.size > 170
@@ -31,6 +37,11 @@
   <div class="container">
     {%- if section.settings.show_breadcrumbs -%}
       {%- render 'breadcrumbs', collection: collection -%}
+    {%- endif -%}
+    {%- if has_banner -%}
+      <div class="collection-banner__image media" style="aspect-ratio: {{ banner.aspect_ratio | at_most: 3.6 }};">
+        {%- render 'image', image: banner, sizes: '(min-width: 1440px) 1360px, 100vw', widths: '720,1080,1440,1920,2560', priority: true, alt: collection.title -%}
+      </div>
     {%- endif -%}
     <div class="collection-banner__inner">
       {%- if section.settings.show_logo and is_brand and logo != blank -%}
@@ -71,6 +82,7 @@
   "settings": [
     { "type": "checkbox", "id": "show_breadcrumbs", "label": "Show breadcrumbs", "default": true },
     { "type": "checkbox", "id": "show_description", "label": "Show description", "default": true },
+    { "type": "checkbox", "id": "show_banner_image", "label": "Show wide collection banner image", "default": true },
     { "type": "checkbox", "id": "show_logo", "label": "Show logo on brand collections", "default": true },
     { "type": "link_list", "id": "brands_menu", "label": "Brands menu", "info": "Used to recognise brand collections. The children of a menu item titled Brands are used when present." }
   ]

@@ -329,3 +329,5 @@ html[data-motion="off"] .marquee__track { animation: none; }
 
 /* Header offset for anchored content */
 .main-content { min-height: 50dvh; }
+
+.image-placeholder__mark { font-family: var(--font-heading); font-size: var(--text-lg); letter-spacing: 0.02em; color: color-mix(in srgb, var(--color-text-muted) 55%, transparent); }

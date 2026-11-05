@@ -3,7 +3,7 @@
 @media (min-width: 750px) { .footer__top { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 990px) { .footer__top { grid-template-columns: 1.4fr repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-9); } }
 .footer__brand { display: grid; gap: var(--space-4); align-content: start; }
-.footer__logo img { width: 160px; height: auto; filter: brightness(0) invert(1); }
+.footer__logo img { width: 160px; height: auto;  }
 .footer__wordmark { font-family: var(--font-heading); font-size: var(--text-2xl); }
 .footer__tagline { color: color-mix(in srgb, var(--color-inverse-text) 72%, transparent); max-width: 36ch; }
 .footer__whatsapp { justify-self: start; }
