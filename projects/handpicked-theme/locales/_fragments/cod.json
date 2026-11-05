@@ -1,0 +1,21 @@
+{
+  "cod": {
+    "or_add_to_cart": "or add to cart and keep shopping",
+    "summary_title": "Your order",
+    "qty": "Qty {{ count }}",
+    "city_not_listed": "Not in the list? Just type your city.",
+    "eta_city": "{{ eta }} to {{ city }}",
+    "eta_other": "4–7 working days",
+    "error_email": "Enter a valid email or leave it blank.",
+    "sold_out_qty": "Only {{ count }} left in this size.",
+    "addon_view": "View {{ title }}",
+    "advance_title": "Order received. Advance needed",
+    "advance_body": "For first orders of this value we ask for a small advance via Easypaisa, JazzCash or Raast. Send the payment screenshot on WhatsApp and we will dispatch right away.",
+    "success_confirm_wa": "Confirm on WhatsApp",
+    "success_receipt_wa": "Send payment receipt on WhatsApp",
+    "wa_confirm_text": "Hi HandPicked, please confirm my order {{ order }} (PKR {{ total }}).",
+    "wa_receipt_text": "Hi HandPicked, here is my advance payment receipt for order {{ order }}.",
+    "trust_exchange": "7-day free size exchange",
+    "prepaid_line": "Prefer to pay now? Bank transfer, Raast or card are available at standard checkout."
+  }
+}

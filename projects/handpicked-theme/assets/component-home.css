@@ -29,6 +29,13 @@
 .brands__item { display: flex; align-items: center; min-height: var(--tap-min); }
 .brands__link, .brands__name { display: inline-flex; align-items: center; min-height: var(--tap-min); font-family: var(--font-heading); font-size: var(--text-2xl); letter-spacing: 0.01em; white-space: nowrap; color: inherit; opacity: 0.85; transition: opacity var(--dur-base) var(--ease-out); }
 .brands__link:hover, .brands__link:focus-visible { opacity: 1; }
+/* Phones: no animation; the first track becomes a swipeable strip, the duplicate track and pause control are hidden. */
+@media (max-width: 749px) {
+  .brands .marquee { overflow-x: auto; mask-image: none; scrollbar-width: none; }
+  .brands .marquee::-webkit-scrollbar { display: none; }
+  .brands .marquee__track { animation: none; }
+  .brands .marquee__track[aria-hidden="true"], .brands .marquee__pause { display: none; }
+}
 .brands__logo { height: 32px; width: auto; max-width: 140px; object-fit: contain; }
 .brands--inverse .brands__logo { filter: brightness(0) invert(1); }
 

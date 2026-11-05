@@ -1,0 +1,54 @@
+/* HandPicked — component-motion.css
+   Injected once by motion.js (not render-blocking). Transform/opacity only, 150–600ms.
+   Everything here is progressive enhancement: the theme is fully usable without it. */
+
+/* ---------- Performance utility: skip rendering of far-below-the-fold sections ---------- */
+.cv-auto { content-visibility: auto; contain-intrinsic-size: auto 720px; }
+
+/* ---------- Add-to-cart success (check overlay on the triggering button) ---------- */
+.add-check {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: var(--color-success); color: #fff; border-radius: inherit; pointer-events: none;
+}
+.add-check svg { width: 22px; height: 22px; }
+.add-check path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Cart badge bump ---------- */
+@keyframes hp-bump { 0% { transform: scale(1); } 45% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.icon-button__count.is-bump { animation: hp-bump 220ms var(--ease-out); }
+
+/* ---------- Draw-the-check (COD success; also reused by the add-to-cart overlay) ----------
+   Markup contract for the COD sheet success screen (pathLength normalises the dash maths):
+   <svg class="hp-check" viewBox="0 0 52 52" aria-hidden="true">
+     <circle class="hp-check__circle" cx="26" cy="26" r="24" pathLength="1"/>
+     <path class="hp-check__tick" d="M15 27l8 8 14-16" pathLength="1"/>
+   </svg>
+   Add .is-drawn (or render the svg inside any [data-cod-success]) to play it. */
+.hp-check { width: 56px; height: 56px; color: var(--color-success); }
+.hp-check circle, .hp-check path { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.hp-check__circle, .hp-check__tick { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.hp-check.is-drawn .hp-check__circle, [data-cod-success] .hp-check__circle { animation: hp-draw 500ms var(--ease-out) forwards; }
+.hp-check.is-drawn .hp-check__tick, [data-cod-success] .hp-check__tick { animation: hp-draw 400ms var(--ease-out) 260ms forwards; }
+@keyframes hp-draw { to { stroke-dashoffset: 0; } }
+.add-check path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: hp-draw 360ms var(--ease-out) 60ms forwards; }
+
+/* ---------- Free-shipping bar: fill grows on (re)render, 400ms ---------- */
+.fs-bar__fill { transition-duration: 400ms; }
+@keyframes hp-fill { from { transform: scaleX(0); } }
+
+/* ---------- Cart drawer: items rise in on open / re-render while [data-stagger] is set ---------- */
+@keyframes hp-rise { from { opacity: 0; transform: translateY(12px); } }
+hp-drawer[data-stagger] .cart-item { animation: hp-rise 320ms var(--ease-out) both; animation-delay: calc(120ms + var(--i, 0) * 45ms); }
+hp-drawer[data-stagger] .fs-bar__fill { animation: hp-fill 400ms var(--ease-out) 100ms both; }
+
+/* ---------- Homepage GSAP handoff ---------- */
+.hp-gsap-parallax img { will-change: transform; }
+
+/* ---------- Level + reduced-motion guards ---------- */
+html[data-motion="subtle"] hp-drawer[data-stagger] .cart-item,
+html[data-motion="subtle"] hp-drawer[data-stagger] .fs-bar__fill { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .icon-button__count.is-bump,
+  hp-drawer[data-stagger] .cart-item, hp-drawer[data-stagger] .fs-bar__fill { animation: none; }
+  .add-check path, .hp-check__circle, .hp-check__tick { animation: none !important; stroke-dashoffset: 0; }
+}

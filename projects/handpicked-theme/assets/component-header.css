@@ -8,7 +8,14 @@
 .announcement__item .icon { color: var(--color-accent); }
 .announcement--inverse .announcement__item .icon { color: color-mix(in srgb, var(--color-accent) 70%, #fff); }
 .announcement__static { display: flex; justify-content: center; gap: var(--space-6); flex-wrap: wrap; padding-block: var(--space-2); }
-@media (max-width: 749px) { .announcement__static .announcement__item:not(:first-child) { display: none; } }
+@media (max-width: 749px) {
+  .announcement__static .announcement__item:not(:first-child) { display: none; }
+  /* Marquee style on phones: one static message, no animation, no pause control needed. */
+  .announcement .marquee { mask-image: none; justify-content: center; }
+  .announcement .marquee__track { animation: none; padding-right: 0; justify-content: center; }
+  .announcement .marquee__track[aria-hidden="true"], .announcement .marquee__track .announcement__item:not(:first-child), .announcement .marquee__pause { display: none; }
+  .announcement .announcement__item { white-space: normal; text-align: center; padding-block: var(--space-2); }
+}
 
 /* Header */
 .header { position: relative; z-index: var(--z-header); background: var(--color-bg); border-bottom: var(--border) solid var(--color-border); transition: box-shadow var(--dur-base), background-color var(--dur-base); }
