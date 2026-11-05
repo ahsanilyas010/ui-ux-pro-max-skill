@@ -1,0 +1,23 @@
+{%- comment -%}
+  Payment method badges driven by settings (no third-party brand artwork: text marks).
+  Params: class
+{%- endcomment -%}
+<ul class="payment-icons{% if class %} {{ class }}{% endif %}" role="list" aria-label="{{ 'accessibility.payment_methods' | t }}">
+  {%- if settings.pay_show_cod -%}
+    <li class="payment-icons__item" title="Cash on delivery">{% render 'icon', name: 'banknote', size: 16 %}<span>COD</span></li>
+  {%- endif -%}
+  {%- if settings.pay_show_bank -%}
+    <li class="payment-icons__item" title="Bank transfer">{% render 'icon', name: 'bank', size: 16 %}<span>Bank transfer</span></li>
+  {%- endif -%}
+  {%- if settings.pay_show_raast -%}
+    <li class="payment-icons__item" title="Raast">{% render 'icon', name: 'exchange', size: 16 %}<span>Raast</span></li>
+  {%- endif -%}
+  {%- if settings.pay_show_cards -%}
+    <li class="payment-icons__item payment-icons__item--card" title="Visa"><span class="payment-icons__mark payment-icons__mark--visa">VISA</span></li>
+    <li class="payment-icons__item payment-icons__item--card" title="Mastercard"><span class="payment-icons__mark payment-icons__mark--mc"><i></i><i></i></span></li>
+  {%- endif -%}
+  {%- if settings.pay_show_wallets -%}
+    <li class="payment-icons__item" title="JazzCash">{% render 'icon', name: 'phone', size: 16 %}<span>JazzCash</span></li>
+    <li class="payment-icons__item" title="Easypaisa">{% render 'icon', name: 'phone', size: 16 %}<span>Easypaisa</span></li>
+  {%- endif -%}
+</ul>

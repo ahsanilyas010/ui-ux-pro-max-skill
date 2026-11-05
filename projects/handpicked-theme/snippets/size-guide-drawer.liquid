@@ -1,0 +1,55 @@
+{%- comment -%}
+  Size guide drawer. Params: product (required), section_id (required), page (page, optional block override), unit ('in' | 'cm', the unit the tables are written in)
+  Content priority: product.metafields.custom.size_guide → block page → settings.pdp_size_guide_page.
+  size-guide.js wraps tables for overflow and offers a cm / inch toggle.
+{%- endcomment -%}
+{%- liquid
+  assign metafield_guide = product.metafields.custom.size_guide
+  assign guide_page = page
+  if guide_page == blank
+    assign guide_page = settings.pdp_size_guide_page
+  endif
+  assign full_url = shop.url | append: product.url
+  assign wa_text = 'products.product.whatsapp_message' | t: title: product.title, url: full_url | url_encode
+-%}
+<hp-drawer id="SizeGuide-{{ section_id }}" data-size-guide data-unit="{{ unit | default: 'in' }}">
+  <div class="drawer drawer--wide" role="presentation">
+    <div class="drawer__overlay" data-drawer-close></div>
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="SizeGuide-{{ section_id }}-title">
+      <div class="drawer__header">
+        <span id="SizeGuide-{{ section_id }}-title" class="drawer__title">{{ 'products.product.size_guide' | t }}</span>
+        <button type="button" class="icon-button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+      </div>
+      <div class="drawer__body sizeguide">
+        <div class="sizeguide__units" data-unit-toggle hidden>
+          <span class="sizeguide__units-label" id="SizeGuide-{{ section_id }}-units">{{ 'products.product.size_guide_units' | t }}</span>
+          <div class="sizeguide__units-buttons" role="group" aria-labelledby="SizeGuide-{{ section_id }}-units">
+            <button type="button" class="chip" data-unit-set="cm" aria-pressed="false">{{ 'products.product.size_guide_cm' | t }}</button>
+            <button type="button" class="chip" data-unit-set="in" aria-pressed="false">{{ 'products.product.size_guide_in' | t }}</button>
+          </div>
+        </div>
+        <div class="rte sizeguide__content" data-size-guide-content>
+          {%- if metafield_guide != blank -%}
+            {{ metafield_guide | metafield_tag }}
+          {%- elsif guide_page != blank -%}
+            {{ guide_page.content }}
+          {%- else -%}
+            <p>{{ 'products.product.size_guide_empty' | t }}</p>
+          {%- endif -%}
+        </div>
+        <section class="sizeguide__tips" aria-labelledby="SizeGuide-{{ section_id }}-tips">
+          <h3 id="SizeGuide-{{ section_id }}-tips" class="h5">{{ 'products.product.measuring_title' | t }}</h3>
+          <ul class="sizeguide__list" role="list">
+            <li>{{ 'products.product.measuring_tip_1' | t }}</li>
+            <li>{{ 'products.product.measuring_tip_2' | t }}</li>
+            <li>{{ 'products.product.measuring_tip_3' | t }}</li>
+            <li>{{ 'products.product.measuring_tip_4' | t }}</li>
+          </ul>
+          <a class="button button--whatsapp button--sm" href="https://wa.me/{{ settings.whatsapp_number }}?text={{ wa_text }}" target="_blank" rel="noopener">
+            {% render 'icon', name: 'whatsapp', size: 16 %}<span>{{ 'general.whatsapp_us' | t }}</span>
+          </a>
+        </section>
+      </div>
+    </div>
+  </div>
+</hp-drawer>

@@ -1,0 +1,19 @@
+{
+  "sections": {
+    "main": {
+      "type": "faq-accordion",
+      "settings": { "eyebrow": "Help centre", "heading": "Frequently asked questions", "use_h1": true },
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "Are your products 100% original?", "answer": "<p>Yes. Everything we sell is an original from an international brand, sourced as export-surplus or outlet stock. We never sell replicas.</p>" } },
+        "q2": { "type": "question", "settings": { "question": "How long does delivery take?", "answer": "<p>2–4 working days to Karachi, Lahore and Islamabad/Rawalpindi, and 4–7 working days elsewhere in Pakistan. Delivery is free on orders over PKR 3,000, otherwise PKR 250.</p>" } },
+        "q3": { "type": "question", "settings": { "question": "Do you offer cash on delivery?", "answer": "<p>Yes, nationwide. Our team confirms your order on WhatsApp first, then you pay the courier when the parcel arrives.</p>" } },
+        "q4": { "type": "question", "settings": { "question": "What if the size does not fit?", "answer": "<p>We offer a 7-day free size exchange. Message us on WhatsApp within 7 days of delivery with your order number and the size you need. Unworn items with tags only, please.</p>" } },
+        "q5": { "type": "question", "settings": { "question": "Can I get a refund?", "answer": "<p>Refunds are only given when the item is not as described. For size or fit, we exchange instead.</p>" } },
+        "q6": { "type": "question", "settings": { "question": "How do I track my order?", "answer": "<p>Once your parcel ships, we send the courier tracking details on WhatsApp.</p>" } },
+        "q7": { "type": "question", "settings": { "question": "How can I contact you?", "answer": "<p>Message us on WhatsApp at +92 342 2221633. We reply during business hours.</p>" } }
+      },
+      "block_order": ["q1", "q2", "q3", "q4", "q5", "q6", "q7"]
+    }
+  },
+  "order": ["main"]
+}

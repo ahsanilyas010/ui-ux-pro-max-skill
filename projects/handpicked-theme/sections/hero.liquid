@@ -1,0 +1,92 @@
+{{ 'component-hero.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign has_mobile = false
+  if s.image_mobile != blank and s.image != blank
+    assign has_mobile = true
+  endif
+  assign tone = s.text_tone | default: 'dark'
+  assign _dk = 'sections.hero.default_eyebrow' | t
+  assign eyebrow_text = s.eyebrow | default: _dk
+  assign _dk = 'sections.hero.default_cta' | t
+  assign cta_text = s.cta_label | default: _dk
+  assign cta_href = s.cta_link | default: '/collections/new-arrivals-1'
+  assign cta2_href = s.cta2_link | default: routes.collections_url
+  assign alt_mobile = s.image_mobile.alt | default: eyebrow_text
+  assign alt_desktop = s.image.alt | default: eyebrow_text
+-%}
+<section
+  class="hero{% if s.image_only %} hero--image-only{% endif %} hero--h-{{ s.height }} hero--tone-{{ tone }} hero--{{ s.text_position }}{% unless has_mobile %} hero--single-image{% endunless %}"
+  data-section-id="{{ section.id }}"
+  style="--hero-overlay: {{ s.overlay }};"
+  aria-label="{{ shop.name | escape }}"
+>
+  {%- if s.image_only -%}<a class="hero__link" href="{{ cta_href }}" aria-label="{{ s.heading | default: eyebrow_text | escape }}">{%- endif -%}
+  {%- if s.video != blank -%}
+    <div class="hero__media media" data-hero-media>
+      {{- s.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, controls: false, image_size: '1920x', class: 'hero__video' -}}
+    </div>
+  {%- elsif s.image != blank -%}
+    {%- if has_mobile -%}
+      <div class="hero__media hero__media--mobile media" data-hero-media>
+        {% render 'image', image: s.image_mobile, sizes: '100vw', widths: '540,720,900,1080', priority: true, alt: alt_mobile %}
+      </div>
+    {%- endif -%}
+    <div class="hero__media hero__media--desktop media" data-hero-media>
+      {% render 'image', image: s.image, sizes: '100vw', widths: '720,1080,1296,1512,1920', priority: true, alt: alt_desktop %}
+    </div>
+  {%- else -%}
+    <div class="hero__media media" data-hero-media>{% render 'image', image: nil, class: 'hero__placeholder' %}</div>
+  {%- endif -%}
+  {%- if s.image_only -%}</a>{%- else -%}
+  <div class="hero__overlay" aria-hidden="true"></div>
+
+  <div class="container hero__inner">
+    <div class="hero__content" data-hero-content>
+      {%- if eyebrow_text != blank -%}<p class="eyebrow hero__eyebrow">{{ eyebrow_text | escape }}</p>{%- endif -%}
+      <h2 class="h1 hero__heading">{%- assign _dk = 'sections.hero.default_heading' | t -%}{{ s.heading | default: _dk }}</h2>
+      {%- assign _dk = 'sections.hero.default_text' | t -%}{%- assign body_text = s.text | default: _dk -%}
+      {%- if body_text != blank -%}<p class="hero__text">{{ body_text | escape }}</p>{%- endif -%}
+      <div class="hero__actions">
+        <a class="button button--lg" href="{{ cta_href }}">{{ cta_text | escape }}</a>
+        {%- if s.cta2_label != blank -%}
+          <a class="button button--secondary button--lg" href="{{ cta2_href }}">{{ s.cta2_label | escape }}</a>
+        {%- endif -%}
+      </div>
+      {%- if s.show_trust_inline -%}
+        <div class="hero__trust">{% render 'trust-row', layout: 'inline' %}</div>
+      {%- endif -%}
+    </div>
+  </div>
+  {%- endif -%}
+</section>
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "div",
+  "class": "shopify-section-hero",
+  "settings": [
+    { "type": "header", "content": "Media" },
+    { "type": "image_picker", "id": "image", "label": "Image (desktop)", "info": "1920 × 1000 or wider. Used as the poster when a video is set." },
+    { "type": "image_picker", "id": "image_mobile", "label": "Image (mobile)", "info": "Optional portrait crop, 1080 × 1350." },
+    { "type": "video", "id": "video", "label": "Video (optional)", "info": "Muted, looping and silent. Keep under 4 MB." },
+    { "type": "select", "id": "height", "label": "Height", "options": [
+      { "value": "small", "label": "Small (60%)" }, { "value": "medium", "label": "Medium (75%)" }, { "value": "large", "label": "Large (90%)" }, { "value": "full", "label": "Full screen" } ], "default": "medium" },
+    { "type": "range", "id": "overlay", "label": "Overlay strength", "min": 0, "max": 60, "step": 5, "unit": "%", "default": 40 },
+    { "type": "checkbox", "id": "image_only", "label": "Image only (text is part of the artwork)", "info": "Hides the theme text and buttons; the whole image links to the button link.", "default": false },
+    { "type": "header", "content": "Text" },
+    { "type": "select", "id": "text_position", "label": "Text position", "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Centre" } ], "default": "left" },
+    { "type": "select", "id": "text_tone", "label": "Text colour", "options": [ { "value": "dark", "label": "Dark text on a light wash" }, { "value": "light", "label": "Light text on a dark wash" } ], "default": "dark" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "info": "Leave empty for the default headline." },
+    { "type": "textarea", "id": "text", "label": "Text" },
+    { "type": "header", "content": "Buttons" },
+    { "type": "text", "id": "cta_label", "label": "Primary button label" },
+    { "type": "url", "id": "cta_link", "label": "Primary button link" },
+    { "type": "text", "id": "cta2_label", "label": "Secondary button label" },
+    { "type": "url", "id": "cta2_link", "label": "Secondary button link" },
+    { "type": "checkbox", "id": "show_trust_inline", "label": "Show trust claims under the buttons", "default": false }
+  ],
+  "presets": [ { "name": "Hero" } ]
+}
+{% endschema %}

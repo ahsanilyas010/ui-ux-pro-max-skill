@@ -1,0 +1,14 @@
+.customer { padding-block: var(--space-8) var(--space-12); }
+.customer__inner { max-width: 520px; margin-inline: auto; display: grid; gap: var(--space-5); }
+.customer__inner--wide { max-width: 960px; }
+.customer__title { font-size: var(--text-3xl); }
+.customer__form { display: grid; gap: var(--space-4); }
+.customer__links { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--text-sm); }
+.customer__table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.customer__table th, .customer__table td { text-align: left; padding: var(--space-3) var(--space-2); border-bottom: var(--border) solid var(--color-border); vertical-align: top; }
+.customer__table th { font-weight: var(--font-body-weight-semibold); color: var(--color-text-muted); font-size: var(--text-xs); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
+.customer__grid { display: grid; gap: var(--space-6); }
+@media (min-width: 750px) { .customer__grid { grid-template-columns: 2fr 1fr; } }
+.address-card { border: var(--border) solid var(--color-border); border-radius: var(--radius); padding: var(--space-5); display: grid; gap: var(--space-3); }
+.address-card__actions { display: flex; gap: var(--space-3); }
+@media (max-width: 749px) { .customer__table thead { display: none; } .customer__table tr { display: grid; gap: 4px; padding: var(--space-3) 0; border-bottom: var(--border) solid var(--color-border); } .customer__table td { border: 0; padding: 0; } .customer__table td::before { content: attr(data-label); display: block; font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); } }

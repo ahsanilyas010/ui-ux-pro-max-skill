@@ -1,0 +1,41 @@
+{%- comment -%}
+  Breadcrumbs: Home / [parent from the menu] / current.
+  Params:
+    collection (collection) – resolves a parent from the menu (e.g. Men) when the collection is a submenu child
+    product    (product)    – adds the product title as the current crumb (collection becomes the parent)
+    current    (string)     – explicit current crumb for pages/articles
+    menu       (linklist)   defaults to linklists['main-menu']
+{%- endcomment -%}
+{%- liquid
+  assign nav_menu = menu | default: linklists['main-menu']
+  assign parent_title = nil
+  assign parent_url = nil
+  if collection and product == nil
+    for top in nav_menu.links
+      for child in top.links
+        if child.url == collection.url and parent_title == nil
+          assign parent_title = top.title
+          assign parent_url = top.url
+        endif
+      endfor
+    endfor
+  endif
+-%}
+<nav class="breadcrumbs-nav" aria-label="{{ 'accessibility.breadcrumbs' | t }}">
+  <ol class="breadcrumbs" role="list">
+    <li><a href="{{ routes.root_url }}">{{ 'general.home' | t }}</a></li>
+    {%- if parent_title -%}
+      <li><a href="{{ parent_url }}">{{ parent_title | escape }}</a></li>
+    {%- endif -%}
+    {%- if collection and product -%}
+      <li><a href="{{ collection.url }}">{{ collection.title | escape }}</a></li>
+    {%- endif -%}
+    {%- if product -%}
+      <li><span aria-current="page">{{ product.title | escape }}</span></li>
+    {%- elsif collection -%}
+      <li><span aria-current="page">{{ collection.title | escape }}</span></li>
+    {%- elsif current != blank -%}
+      <li><span aria-current="page">{{ current | escape }}</span></li>
+    {%- endif -%}
+  </ol>
+</nav>

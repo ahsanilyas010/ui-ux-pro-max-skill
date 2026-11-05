@@ -54,3 +54,10 @@ ui-ux-pro-max-website/*
 
 cli/playwright-report/
 cli/test-results/
+
+projects/handpicked-cod-app/.cache/
+projects/handpicked-cod-app/.shopify/
+# HandPicked theme local tooling
+projects/handpicked-theme/node_modules/
+projects/handpicked-theme/test-results/
+projects/handpicked-theme/.lighthouseci/

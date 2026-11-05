@@ -1,0 +1,35 @@
+{{ 'component-home.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign cols = 4
+  assign list_mod = ''
+  if s.show_whatsapp
+    assign list_mod = ' trust-strip__list--5'
+    assign cols = 5
+  endif
+-%}
+<section class="trust-strip" data-section-id="{{ section.id }}" aria-label="{{ 'sections.trust_strip.label' | t }}">
+  <div class="container">
+    <ul class="trust-strip__list{{ list_mod }}" role="list" style="--cols: {{ cols }};">
+      <li class="trust-strip__item">{% render 'icon', name: 'badge-check', size: 20 %}<span>{%- assign _dk = 'trust.original' | t -%}{{ settings.trust_claim_1 | default: _dk }}</span></li>
+      <li class="trust-strip__item">{% render 'icon', name: 'truck', size: 20 %}<span>{{ settings.trust_claim_2 }}</span></li>
+      <li class="trust-strip__item">{% render 'icon', name: 'banknote', size: 20 %}<span>{%- assign _dk = 'trust.cod' | t -%}{{ settings.trust_claim_3 | default: _dk }}</span></li>
+      <li class="trust-strip__item">{% render 'icon', name: 'exchange', size: 20 %}<span>{%- assign _dk = 'trust.exchange' | t -%}{{ settings.trust_claim_4 | default: _dk }}</span></li>
+      {%- if s.show_whatsapp -%}
+        <li class="trust-strip__item"><a href="https://wa.me/{{ settings.whatsapp_number }}" target="_blank" rel="noopener">{% render 'icon', name: 'whatsapp', size: 20 %}<span>{{ 'sections.trust_strip.whatsapp' | t }}</span></a></li>
+      {%- endif -%}
+    </ul>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Trust strip",
+  "tag": "div",
+  "class": "shopify-section-trust-strip",
+  "settings": [
+    { "type": "paragraph", "content": "The four claims come from Theme settings → Trust & contact." },
+    { "type": "checkbox", "id": "show_whatsapp", "label": "Add a WhatsApp item", "default": false }
+  ],
+  "presets": [ { "name": "Trust strip" } ]
+}
+{% endschema %}

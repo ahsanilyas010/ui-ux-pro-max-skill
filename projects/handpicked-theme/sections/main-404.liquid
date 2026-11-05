@@ -1,0 +1,14 @@
+<section class="section section--tight" data-section-id="{{ section.id }}">
+  <div class="container container--narrow empty-state" style="padding-block: var(--space-12)">
+    <p class="eyebrow">404</p>
+    <h1 class="h2">{{ 'page_404.title' | t }}</h1>
+    <p class="lead u-text-center">{{ 'page_404.text' | t }}</p>
+    <div class="u-flex u-wrap u-gap-3" style="justify-content:center">
+      <a class="button" href="{{ section.settings.cta_link | default: routes.all_products_collection_url }}">{{ 'page_404.cta' | t }}</a>
+      <button class="button button--secondary" type="button" data-drawer-open="SearchDrawer">{% render 'icon', name: 'search', size: 16 %} {{ 'page_404.search_cta' | t }}</button>
+    </div>
+  </div>
+</section>
+{% schema %}
+{ "name": "404 page", "tag": "div", "settings": [ { "type": "url", "id": "cta_link", "label": "Primary button link" } ] }
+{% endschema %}

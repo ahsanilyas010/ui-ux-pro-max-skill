@@ -1,0 +1,152 @@
+{%- comment -%}
+  Product card — the theme-wide contract:
+  {% render 'product-card', product: product, priority: boolean, sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw', show_quick_add: boolean %}
+  Optional: ratio ('3/4'), show_vendor (boolean, defaults to settings.card_show_vendor), lazy_alt (always true).
+  Structure: the whole card is ONE link (the title link is stretched over the card); quick add (desktop only) sits above it.
+  Price-first hierarchy: sale price 600, struck compare-at, "% off" as muted text, subtle badges.
+{%- endcomment -%}
+{%- liquid
+  assign card_ratio = ratio | default: settings.card_ratio | default: '3/4'
+  assign ratio_parts = card_ratio | split: '/'
+  assign ratio_w = ratio_parts[0] | times: 1.0
+  assign ratio_h = ratio_parts[1] | times: 1.0
+  assign frame_ratio = ratio_w | divided_by: ratio_h
+  assign cur_variant = product.selected_or_first_available_variant
+  assign low_limit = settings.card_low_stock_threshold | default: 5
+  assign sizes_attr = sizes | default: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  assign show_vendor_flag = settings.card_show_vendor
+  if show_vendor != nil
+    assign show_vendor_flag = show_vendor
+  endif
+
+  assign on_sale = false
+  if cur_variant.compare_at_price > cur_variant.price
+    assign on_sale = true
+  endif
+
+  assign is_new = false
+  assign new_days = settings.card_new_days | default: 0
+  if new_days > 0
+    assign now_s = 'now' | date: '%s' | times: 1
+    assign pub_s = product.published_at | date: '%s' | times: 1
+    assign age_s = now_s | minus: pub_s
+    assign max_age = new_days | times: 86400
+    if age_s >= 0 and age_s <= max_age
+      assign is_new = true
+    endif
+  endif
+
+  assign tracked_total = 0
+  assign tracked_any = false
+  assign low_variant = false
+  for v in product.variants
+    if v.available and v.inventory_management == 'shopify'
+      if v.inventory_quantity > 0 and v.inventory_quantity <= low_limit
+        assign low_variant = true
+      endif
+      if v.inventory_policy == 'deny'
+        assign tracked_any = true
+        assign tracked_total = tracked_total | plus: v.inventory_quantity
+      endif
+    endif
+  endfor
+  assign show_stock = false
+  if tracked_any and tracked_total > 0 and tracked_total <= low_limit
+    assign show_stock = true
+  endif
+
+  assign primary = product.featured_media.preview_image
+  if primary == blank
+    assign primary = product.featured_image
+  endif
+  assign alt_image = nil
+  if settings.card_hover_image and product.images.size > 1
+    assign alt_image = product.images[1]
+    if alt_image.src == primary.src
+      assign alt_image = product.images[0]
+    endif
+  endif
+
+  assign primary_fill = false
+  if primary
+    assign primary_diff = primary.aspect_ratio | minus: frame_ratio | abs | divided_by: frame_ratio
+    if primary_diff <= 0.1 or settings.card_image_fit == 'cover'
+      assign primary_fill = true
+    endif
+  endif
+  assign alt_fill = false
+  if alt_image
+    assign alt_diff = alt_image.aspect_ratio | minus: frame_ratio | abs | divided_by: frame_ratio
+    if alt_diff <= 0.1 or settings.card_image_fit == 'cover'
+      assign alt_fill = true
+    endif
+  endif
+
+  assign primary_class = 'product-card__img'
+  if primary_fill
+    assign primary_class = 'product-card__img is-fill'
+  endif
+  assign alt_class = 'product-card__img product-card__img--alt'
+  if alt_fill
+    assign alt_class = 'product-card__img product-card__img--alt is-fill'
+  endif
+
+  assign label_soldout = 'products.product.badge_sold_out' | t
+  assign label_sale = 'products.product.badge_sale' | t
+  assign label_new = 'products.product.badge_new' | t
+  assign label_fast = 'products.product.badge_selling_fast' | t
+
+  assign quick_add_on = false
+  if settings.card_quick_add and show_quick_add != false and product.available
+    assign quick_add_on = true
+  endif
+-%}
+<article class="product-card{% unless product.available %} is-soldout{% endunless %}" data-product-card data-product-id="{{ product.id }}">
+  <div class="product-card__media media media--card"{% if ratio %} style="--card-ratio: {{ card_ratio }};"{% endif %}>
+    {%- if primary -%}
+      {%- render 'image', image: primary, sizes: sizes_attr, widths: '360,540,720,900', class: primary_class, priority: priority, alt: product.title -%}
+    {%- else -%}
+      {%- render 'image', image: nil -%}
+    {%- endif -%}
+    {%- if alt_image -%}
+      {%- render 'image', image: alt_image, sizes: sizes_attr, widths: '360,540,720,900', class: alt_class, loading: 'lazy', alt: ' ' -%}
+    {%- endif -%}
+
+    <div class="badge-stack" aria-hidden="false">
+      {%- unless product.available -%}
+        {%- render 'badge', type: 'soldout', text: label_soldout -%}
+      {%- else -%}
+        {%- if on_sale -%}
+          {%- render 'badge', type: 'sale', text: label_sale -%}
+        {%- endif -%}
+        {%- if is_new -%}
+          {%- render 'badge', type: 'new', text: label_new -%}
+        {%- endif -%}
+        {%- if low_variant and show_stock == false -%}
+          {%- render 'badge', type: 'fast', text: label_fast -%}
+        {%- endif -%}
+      {%- endunless -%}
+    </div>
+
+    {%- if quick_add_on -%}
+      {%- render 'quick-add', product: product -%}
+    {%- endif -%}
+  </div>
+
+  <div class="product-card__info">
+    {%- if show_vendor_flag and product.vendor != blank -%}
+      <p class="card__meta product-card__vendor">{{ product.vendor | escape }}</p>
+    {%- endif -%}
+    <h3 class="product-card__title"><a class="product-card__link" href="{{ product.url }}">{{ product.title | escape }}</a></h3>
+    {%- liquid
+      assign pct_flag = false
+      if settings.card_show_sale_percent
+        assign pct_flag = true
+      endif
+    -%}
+    {%- render 'price', product: product, show_save: pct_flag, class: 'product-card__price' -%}
+    {%- if show_stock -%}
+      {%- render 'stock-indicator', quantity: tracked_total, class: 'product-card__stock' -%}
+    {%- endif -%}
+  </div>
+</article>

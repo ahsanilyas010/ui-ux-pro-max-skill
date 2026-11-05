@@ -1,0 +1,58 @@
+{{ 'component-home.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign end_ts = 0
+  if s.end_date != blank
+    assign end_raw = s.end_date | date: '%s' | times: 1
+    assign end_ts = end_raw | minus: 18000
+  endif
+  assign now_ts = 'now' | date: '%s' | times: 1
+  assign expired = true
+  if end_ts > now_ts
+    assign expired = false
+  endif
+  assign show_promo = false
+  if expired == false
+    assign show_promo = true
+  endif
+  if request.design_mode
+    assign show_promo = true
+  endif
+-%}
+{%- if show_promo -%}
+<section class="promo" data-section-id="{{ section.id }}" data-countdown-section>
+  <div class="container promo__inner">
+    {%- if s.heading != blank -%}<h2 class="h2">{{ s.heading | escape }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<p class="promo__text">{{ s.text | escape }}</p>{%- endif -%}
+    {%- assign end_ms = end_ts | times: 1000 -%}
+    <hp-countdown class="countdown" data-end="{{ end_ms }}" role="timer" aria-label="{{ 'sections.countdown.label' | t }}">
+      <div class="countdown__unit"><span class="countdown__num" data-cd="d">00</span><span class="countdown__label">{{ 'sections.countdown.days' | t }}</span></div>
+      <span class="countdown__sep" aria-hidden="true">:</span>
+      <div class="countdown__unit"><span class="countdown__num" data-cd="h">00</span><span class="countdown__label">{{ 'sections.countdown.hours' | t }}</span></div>
+      <span class="countdown__sep" aria-hidden="true">:</span>
+      <div class="countdown__unit"><span class="countdown__num" data-cd="m">00</span><span class="countdown__label">{{ 'sections.countdown.minutes' | t }}</span></div>
+      <span class="countdown__sep" aria-hidden="true">:</span>
+      <div class="countdown__unit"><span class="countdown__num" data-cd="s">00</span><span class="countdown__label">{{ 'sections.countdown.seconds' | t }}</span></div>
+    </hp-countdown>
+    {%- if s.link != blank and s.link_label != blank -%}
+      <a class="button" href="{{ s.link }}">{{ s.link_label | escape }}</a>
+    {%- endif -%}
+  </div>
+</section>
+<script src="{{ 'countdown.js' | asset_url }}" defer></script>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Promo countdown",
+  "tag": "div",
+  "class": "shopify-section-promo-countdown",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Weekend deals" },
+    { "type": "text", "id": "text", "label": "Text", "default": "Selected outlet pieces at their lowest prices. While sizes last." },
+    { "type": "text", "id": "end_date", "label": "Ends at", "info": "YYYY-MM-DD HH:MM in Pakistan time (Asia/Karachi), e.g. 2026-12-06 23:59. The section hides itself when the time passes." },
+    { "type": "text", "id": "link_label", "label": "Button label", "default": "Shop deals" },
+    { "type": "url", "id": "link", "label": "Button link" }
+  ],
+  "presets": [ { "name": "Promo countdown" } ]
+}
+{% endschema %}

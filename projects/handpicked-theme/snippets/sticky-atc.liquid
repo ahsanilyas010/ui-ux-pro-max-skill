@@ -1,0 +1,46 @@
+{%- comment -%}
+  Mobile sticky add-to-cart bar (<990px). Params: product, variant (current), section_id, form_id
+  Shown by product-form.js only after the in-flow buy block has scrolled out of view; hidden while any
+  hp-drawer is open (so the COD sheet is never obscured); respects env(safe-area-inset-bottom).
+  Starts `inert` so it is invisible and untabbable until JS reveals it.
+{%- endcomment -%}
+{%- liquid
+  assign size_index = -1
+  assign size_option = nil
+  for option in product.options_with_values
+    assign opt_name = option.name | downcase
+    if opt_name contains 'size' and size_option == nil
+      assign size_option = option
+      assign size_index = forloop.index0
+    endif
+  endfor
+  assign thumb = variant.featured_media.preview_image | default: product.featured_media.preview_image
+-%}
+<div class="sticky-atc" data-sticky-atc data-size-index="{{ size_index }}" aria-hidden="true" inert>
+  <div class="sticky-atc__inner">
+    <div class="sticky-atc__info">
+      {%- if thumb -%}
+        <span class="media sticky-atc__thumb">{% render 'image', image: thumb, sizes: '48px', widths: '96,144', alt: '' %}</span>
+      {%- endif -%}
+      <div class="sticky-atc__text">
+        <p class="sticky-atc__title">{{ product.title | escape }}</p>
+        <div class="sticky-atc__price" data-dynamic="sticky-price">{% render 'price', product: product, variant: variant %}</div>
+      </div>
+    </div>
+    <div class="sticky-atc__actions">
+      {%- if size_option and product.has_only_default_variant == false -%}
+        <label class="visually-hidden" for="StickySize-{{ section_id }}">{{ 'products.product.sticky_size' | t }}</label>
+        <select class="field__select sticky-atc__select" id="StickySize-{{ section_id }}" data-sticky-size>
+          {%- for value in size_option.values -%}
+            <option value="{{ value | escape }}"{% if value == variant.options[size_index] %} selected{% endif %}>{{ value | escape }}{% unless value.available %} {{ 'products.product.sold_out_option' | t }}{% endunless %}</option>
+          {%- endfor -%}
+        </select>
+      {%- endif -%}
+      <div class="sticky-atc__add-wrap" data-dynamic="sticky-atc">
+        <button type="button" class="button sticky-atc__add" data-sticky-add{% unless variant.available %} disabled aria-disabled="true"{% endunless %}>
+          {%- if variant.available -%}{{ 'products.product.sticky_add' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

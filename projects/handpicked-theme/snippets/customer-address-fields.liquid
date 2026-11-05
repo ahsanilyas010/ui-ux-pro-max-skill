@@ -1,0 +1,20 @@
+{%- comment -%} Shared address form fields. Params: form, prefix {%- endcomment -%}
+<div class="form-row form-row--2">
+  <div class="field"><label class="field__label" for="{{ prefix }}FirstName">{{ 'customer.addresses.first_name' | t }}</label><input class="field__input" type="text" id="{{ prefix }}FirstName" name="address[first_name]" value="{{ form.first_name }}" autocomplete="given-name"></div>
+  <div class="field"><label class="field__label" for="{{ prefix }}LastName">{{ 'customer.addresses.last_name' | t }}</label><input class="field__input" type="text" id="{{ prefix }}LastName" name="address[last_name]" value="{{ form.last_name }}" autocomplete="family-name"></div>
+</div>
+<div class="field"><label class="field__label" for="{{ prefix }}Address1">{{ 'customer.addresses.address1' | t }}</label><input class="field__input" type="text" id="{{ prefix }}Address1" name="address[address1]" value="{{ form.address1 }}" autocomplete="address-line1"></div>
+<div class="field"><label class="field__label" for="{{ prefix }}Address2">{{ 'customer.addresses.address2' | t }}</label><input class="field__input" type="text" id="{{ prefix }}Address2" name="address[address2]" value="{{ form.address2 }}" autocomplete="address-line2"></div>
+<div class="form-row form-row--2">
+  <div class="field"><label class="field__label" for="{{ prefix }}City">{{ 'customer.addresses.city' | t }}</label><input class="field__input" type="text" id="{{ prefix }}City" name="address[city]" value="{{ form.city }}" autocomplete="address-level2"></div>
+  <div class="field"><label class="field__label" for="{{ prefix }}Zip">{{ 'customer.addresses.zip' | t }}</label><input class="field__input" type="text" id="{{ prefix }}Zip" name="address[zip]" value="{{ form.zip }}" autocomplete="postal-code"></div>
+</div>
+<div class="form-row form-row--2">
+  <div class="field"><label class="field__label" for="{{ prefix }}Country">{{ 'customer.addresses.country' | t }}</label><select class="field__select" id="{{ prefix }}Country" name="address[country]" data-default="{{ form.country | default: 'Pakistan' }}" autocomplete="country">{{ all_country_option_tags }}</select></div>
+  <div class="field"><label class="field__label" for="{{ prefix }}Province">{{ 'customer.addresses.province' | t }}</label><input class="field__input" type="text" id="{{ prefix }}Province" name="address[province]" value="{{ form.province }}" autocomplete="address-level1"></div>
+</div>
+<div class="field"><label class="field__label" for="{{ prefix }}Phone">{{ 'customer.addresses.phone' | t }}</label><input class="field__input" type="tel" id="{{ prefix }}Phone" name="address[phone]" value="{{ form.phone }}" autocomplete="tel" inputmode="tel"></div>
+<label class="checkbox"><input type="checkbox" name="address[default]" {% if form.set_as_default_checkbox %}checked{% endif %} value="1"> {{ 'customer.addresses.set_default' | t }}</label>
+<script>
+  (function(){ var s=document.getElementById('{{ prefix }}Country'); if(!s) return; var d=s.getAttribute('data-default'); if(d){ for (var i=0; s.options.length > i; i++){ if(s.options[i].value===d||s.options[i].text===d){ s.selectedIndex=i; break; } } } })();
+</script>

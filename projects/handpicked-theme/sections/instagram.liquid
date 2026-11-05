@@ -1,0 +1,74 @@
+{{ 'component-home.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign posts = section.blocks | where: 'type', 'post'
+  assign has_images = false
+  for post in posts
+    if post.settings.image != blank
+      assign has_images = true
+    endif
+  endfor
+  assign profile = s.profile_link | default: settings.social_instagram
+-%}
+{%- if has_images or request.design_mode or section.blocks.size > posts.size -%}
+<section class="section" data-section-id="{{ section.id }}">
+  <div class="container">
+    <header class="section__header section__header--center" data-reveal>
+      <div class="section__heading">
+        {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="section__title">{{ s.heading | escape }}</h2>{%- endif -%}
+      </div>
+    </header>
+    {%- for block in section.blocks -%}
+      {%- if block.type == '@app' -%}{% render block %}{%- endif -%}
+    {%- endfor -%}
+    {%- if has_images or request.design_mode -%}
+    <ul class="insta__grid" role="list">
+      {%- for post in posts -%}
+        {%- if post.settings.image != blank or request.design_mode -%}
+        {%- assign post_alt = post.settings.image.alt | default: s.heading -%}
+        <li {{ post.shopify_attributes }}>
+          {%- if post.settings.link != blank -%}<a class="insta__link" href="{{ post.settings.link }}" target="_blank" rel="noopener" aria-label="{{ 'sections.instagram.post_label' | t }}">{%- else -%}<div class="insta__link">{%- endif -%}
+            <div class="media media--square">{% render 'image', image: post.settings.image, sizes: '(min-width: 990px) 16vw, 33vw', widths: '240,360,540,720', alt: post_alt %}</div>
+          {%- if post.settings.link != blank -%}</a>{%- else -%}</div>{%- endif -%}
+        </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+    {%- endif -%}
+    {%- if profile != blank and s.handle != blank -%}
+      <div class="insta__footer">
+        <a class="button button--secondary" href="{{ profile }}" target="_blank" rel="noopener">{% render 'icon', name: 'instagram', size: 18 %} {{ 'sections.instagram.follow' | t: handle: s.handle }}</a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+{% schema %}
+{
+  "name": "Instagram",
+  "tag": "div",
+  "class": "shopify-section-instagram",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "On Instagram" },
+    { "type": "text", "id": "handle", "label": "Handle", "default": "@handpicked.pk" },
+    { "type": "url", "id": "profile_link", "label": "Profile link", "info": "Defaults to the Instagram URL in Theme settings." }
+  ],
+  "blocks": [
+    {
+      "type": "post",
+      "name": "Post",
+      "limit": 6,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "url", "id": "link", "label": "Post link" }
+      ]
+    },
+    { "type": "@app" }
+  ],
+  "presets": [
+    { "name": "Instagram", "blocks": [ { "type": "post" }, { "type": "post" }, { "type": "post" }, { "type": "post" }, { "type": "post" }, { "type": "post" } ] }
+  ]
+}
+{% endschema %}

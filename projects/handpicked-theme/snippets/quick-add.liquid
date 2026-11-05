@@ -1,0 +1,44 @@
+{%- comment -%}
+  Desktop quick-add bar for product cards. Hidden below 990px and on touch devices via component-product-card.css;
+  revealed on card hover / focus-within. quick-add.js handles the clicks (HP.cart.add → cart:updated).
+  Params:
+    product (product, required) – should be available
+  Rules:
+    - single option whose name contains "size" → one pill per variant (unavailable sizes disabled)
+    - product.has_only_default_variant → single "Add to cart" button
+    - anything else (colour + size, etc.) → renders nothing; the card itself links to the product page
+{%- endcomment -%}
+{%- liquid
+  assign size_option = nil
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    if option_name contains 'size'
+      assign size_option = option
+    endif
+  endfor
+  assign mode = 'none'
+  if product.has_only_default_variant
+    assign mode = 'single'
+  elsif size_option and product.options.size == 1
+    assign mode = 'sizes'
+  endif
+-%}
+{%- if mode != 'none' -%}
+  <div class="quick-add" data-quick-add-root data-product-title="{{ product.title | escape }}">
+    {%- if mode == 'single' -%}
+      {%- assign add_label = 'products.product.quick_add_variant' | t: title: product.title -%}
+      <button type="button" class="quick-add__button" data-quick-add data-variant-id="{{ product.selected_or_first_available_variant.id }}" aria-label="{{ add_label | escape }}">
+        {%- render 'icon', name: 'bag', size: 16 -%}
+        <span>{{ 'products.product.add_to_cart' | t }}</span>
+      </button>
+    {%- else -%}
+      <span class="quick-add__label" aria-hidden="true">{{ 'products.product.quick_add' | t }} · {{ size_option.name | escape }}</span>
+      <div class="quick-add__pills" role="group" aria-label="{{ 'products.product.quick_add_sizes' | t }}">
+        {%- for variant in product.variants -%}
+          {%- assign pill_label = 'products.product.quick_add_variant' | t: title: variant.title -%}
+          <button type="button" class="quick-add__pill" data-quick-add data-variant-id="{{ variant.id }}" aria-label="{{ pill_label | escape }}"{% unless variant.available %} disabled{% endunless %}>{{ variant.option1 | escape }}</button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

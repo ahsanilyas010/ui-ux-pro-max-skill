@@ -1,0 +1,30 @@
+{%- comment -%}
+  "Only N left" indicator. Renders nothing when the count is 0 or above the threshold.
+  Params:
+    product   (product) sums inventory of available variants tracked by Shopify with policy "deny"
+    quantity  (number)  explicit count – overrides product (the card passes its already-summed total)
+    threshold (number)  defaults to settings.card_low_stock_threshold
+    class     (string)
+{%- endcomment -%}
+{%- liquid
+  assign limit = threshold | default: settings.card_low_stock_threshold | default: 5
+  assign tracked = false
+  assign total = 0
+  if quantity != nil
+    assign total = quantity | plus: 0
+    assign tracked = true
+  else
+    for v in product.variants
+      if v.available and v.inventory_management == 'shopify' and v.inventory_policy == 'deny'
+        assign tracked = true
+        assign total = total | plus: v.inventory_quantity
+      endif
+    endfor
+  endif
+-%}
+{%- if tracked and total > 0 and total <= limit -%}
+  <p class="stock-indicator{% if class %} {{ class }}{% endif %}" data-stock-indicator data-stock="{{ total }}">
+    {%- render 'icon', name: 'sparkle', size: 12 -%}
+    <span>{{ 'products.product.only_left' | t: count: total }}</span>
+  </p>
+{%- endif -%}

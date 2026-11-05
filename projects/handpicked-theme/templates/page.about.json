@@ -1,0 +1,37 @@
+{
+  "sections": {
+    "hero": {
+      "type": "about-hero",
+      "settings": {
+        "eyebrow": "About HandPicked",
+        "heading": "Original brands, without the boutique mark-up.",
+        "lead": "<p>HandPicked is a Pakistani store for 100% original international brands. We buy export-surplus and outlet stock, check every piece, and sell it at outlet prices, delivered to your door with cash on delivery.</p>",
+        "cta_label": "Shop new arrivals",
+        "cta_link": "/collections/new-arrivals-1"
+      }
+    },
+    "values": {
+      "type": "about-values",
+      "settings": { "heading": "What we stand for" },
+      "blocks": {
+        "v1": { "type": "value", "settings": { "icon": "badge-check", "heading": "100% original", "text": "Every piece is an original from an international label, sourced as export surplus or outlet stock. Never a replica." } },
+        "v2": { "type": "value", "settings": { "icon": "tag", "heading": "Outlet prices", "text": "No boutique rent, no middle layers. You pay outlet prices for the same label." } },
+        "v3": { "type": "value", "settings": { "icon": "exchange", "heading": "Fair exchange", "text": "7-day free size exchange. Refund only if the item is not as described." } }
+      },
+      "block_order": ["v1", "v2", "v3"]
+    },
+    "trust": { "type": "trust-strip", "settings": { "show_whatsapp": true } },
+    "faq": {
+      "type": "faq-accordion",
+      "settings": { "eyebrow": "Good to know", "heading": "Common questions", "use_h1": false },
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "Are your products really original?", "answer": "<p>Yes. We sell 100% original international brands, sourced as export-surplus and outlet stock. We never sell replicas or copies.</p>" } },
+        "q2": { "type": "question", "settings": { "question": "Why are your prices lower than the mall?", "answer": "<p>Export-surplus and outlet stock is bought in volume and sold without boutique rent or mark-up, so you get the same label for less.</p>" } },
+        "q3": { "type": "question", "settings": { "question": "Why do some sizes show only one or two pieces left?", "answer": "<p>Surplus stock is limited. When a size sells out, it usually does not come back, so the stock counts you see are real.</p>" } },
+        "q4": { "type": "question", "settings": { "question": "How does cash on delivery work?", "answer": "<p>Place your order, our team confirms it on WhatsApp, and you pay the courier in cash when it arrives. Check the parcel at the door.</p>" } }
+      },
+      "block_order": ["q1", "q2", "q3", "q4"]
+    }
+  },
+  "order": ["hero", "values", "trust", "faq"]
+}

@@ -1,0 +1,48 @@
+{%- comment -%}
+  Price block (uses .price* primitives from base.css; .price__from lives in component-product-card.css).
+  Params:
+    product   (product)  defaults to product.selected_or_first_available_variant; shows "From" when prices vary
+    variant   (variant)  explicit variant – overrides product and disables the "From" prefix
+    class     (string)   extra classes
+    size      'lg'       larger type (PDP)
+    show_save (boolean)  append "-X%" after the compare-at price
+    id        (string)   optional id so the product page can update it on variant change
+  Data hooks: [data-price], [data-price-current], [data-price-compare]
+{%- endcomment -%}
+{%- liquid
+  if variant
+    assign v = variant
+  else
+    assign v = product.selected_or_first_available_variant
+  endif
+  assign price = v.price
+  if price == nil
+    assign price = product.price
+  endif
+  assign compare = v.compare_at_price
+  assign on_sale = false
+  if compare > price
+    assign on_sale = true
+  endif
+  assign varies = false
+  if variant == nil and product.price_varies
+    assign varies = true
+  endif
+  assign pct = 0
+  if on_sale and show_save
+    assign pct = compare | minus: price | times: 100.0 | divided_by: compare | round
+  endif
+-%}
+<div class="price{% if on_sale %} price--on-sale{% endif %}{% if size == 'lg' %} price--lg{% endif %}{% if class %} {{ class }}{% endif %}"{% if id %} id="{{ id }}"{% endif %} data-price>
+  {%- if varies -%}
+    <span class="price__current" data-price-current><span class="price__from">{{ 'products.facets.from' | t }}</span> {{ product.price_min | money }}</span>
+  {%- elsif on_sale -%}
+    <span class="visually-hidden">{{ 'products.product.sale_price' | t }}</span>
+    <span class="price__current" data-price-current>{{ price | money }}</span>
+    <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+    <s class="price__compare" data-price-compare>{{ compare | money }}</s>
+    {%- if show_save and pct > 0 -%}<span class="price__save">{{ 'products.product.save_percent' | t: percent: pct }}</span>{%- endif -%}
+  {%- else -%}
+    <span class="price__current" data-price-current>{{ price | money }}</span>
+  {%- endif -%}
+</div>
