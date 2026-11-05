@@ -1,0 +1,103 @@
+{%- comment -%}
+  One cart line (used by the cart drawer and the cart page).
+  Params:
+    item    (line item, required)
+    index   (number, 1-based line index, required)
+    context 'drawer' | 'page'
+  Hooks: [data-cart-line] carries data-line-key / data-variant-id / data-qty / data-max for cart.js.
+{%- endcomment -%}
+{%- liquid
+  assign ci_context = context | default: 'drawer'
+  assign ci_variant = item.variant
+  assign ci_title = item.product.title
+  assign ci_max = nil
+  if ci_variant.inventory_management == 'shopify' and ci_variant.inventory_policy == 'deny'
+    assign ci_max = ci_variant.inventory_quantity
+    if ci_max < item.quantity
+      assign ci_max = item.quantity
+    endif
+  endif
+  assign ci_low = false
+  if ci_max != nil and ci_max <= 3
+    assign ci_low = true
+  endif
+  assign ci_compare = item.original_price
+  if ci_variant.compare_at_price > ci_compare
+    assign ci_compare = ci_variant.compare_at_price
+  endif
+  assign ci_on_sale = false
+  if ci_compare > item.final_price
+    assign ci_on_sale = true
+  endif
+  assign ci_pct = 0
+  if ci_on_sale
+    assign ci_pct = ci_compare | minus: item.final_price | times: 100.0 | divided_by: ci_compare | round
+  endif
+-%}
+<li class="cart-item cart-item--{{ ci_context }}" data-cart-line data-line-key="{{ item.key }}" data-line-index="{{ index }}" data-variant-id="{{ item.variant_id }}" data-qty="{{ item.quantity }}"{% if ci_max != nil %} data-max="{{ ci_max }}"{% endif %}>
+  <a class="cart-item__media media media--portrait" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+    {%- if item.image -%}
+      {% render 'image', image: item.image, sizes: '96px', widths: '144,192,288', alt: ci_title %}
+    {%- endif -%}
+  </a>
+
+  <div class="cart-item__body">
+    {%- if item.vendor != blank -%}<p class="card__meta">{{ item.vendor }}</p>{%- endif -%}
+    <a href="{{ item.url }}" class="cart-item__title">{{ ci_title }}</a>
+    {%- unless item.product.has_only_default_variant -%}
+      <p class="cart-item__options text-sm u-text-muted">
+        {%- for option in item.options_with_values -%}
+          <span>{{ option.name }}: {{ option.value }}</span>{% unless forloop.last %} · {% endunless %}
+        {%- endfor -%}
+      </p>
+    {%- endunless -%}
+    {%- for property in item.properties -%}
+      {%- assign ci_first = property.first | slice: 0 -%}
+      {%- if ci_first != '_' and property.last != blank -%}
+        <p class="text-xs u-text-muted">{{ property.first }}: {{ property.last }}</p>
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if item.selling_plan_allocation -%}
+      <p class="text-xs u-text-muted">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+    {%- endif -%}
+    <p class="price cart-item__price{% if ci_on_sale %} price--on-sale{% endif %}">
+      <span class="price__current">{{ item.final_price | money }}</span>
+      {%- if ci_on_sale -%}
+        <s class="price__compare">{{ ci_compare | money }}</s>
+        <span class="cart-item__off">{{ 'products.product.save_percent' | t: percent: ci_pct }}</span>
+      {%- endif -%}
+    </p>
+    {%- if item.line_level_discount_allocations.size > 0 -%}
+      <ul class="cart-item__discounts" role="list">
+        {%- for allocation in item.line_level_discount_allocations -%}
+          <li>{% render 'icon', name: 'tag', size: 14 %}<span>{{ allocation.discount_application.title }} (-{{ allocation.amount | money }})</span></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    {%- if ci_low -%}
+      <p class="cart-item__low text-xs">{{ 'products.product.n_left' | t: count: ci_max }}</p>
+    {%- endif -%}
+  </div>
+
+  <div class="cart-item__actions">
+    <hp-quantity class="quantity" data-quantity>
+      <button type="button" class="quantity__button" data-dir="down" aria-label="{{ 'accessibility.decrease_quantity' | t: title: ci_title }}">{% render 'icon', name: 'minus', size: 16 %}</button>
+      <input class="quantity__input" id="CartQty-{{ ci_context }}-{{ index }}" data-cart-qty-input type="number" inputmode="numeric" min="1"{% if ci_max != nil %} max="{{ ci_max }}"{% endif %} value="{{ item.quantity }}" aria-label="{{ 'cart.quantity_for' | t: title: ci_title }}">
+      <button type="button" class="quantity__button" data-dir="up" aria-label="{{ 'accessibility.increase_quantity' | t: title: ci_title }}">{% render 'icon', name: 'plus', size: 16 %}</button>
+    </hp-quantity>
+    <a href="{{ item.url_to_remove }}" class="icon-button cart-item__remove" data-cart-remove data-variant-id="{{ item.variant_id }}" data-title="{{ ci_title | escape }}" data-properties="{{ item.properties | json | escape }}">
+      {% render 'icon', name: 'trash', size: 18 %}
+      <span class="visually-hidden">{{ 'accessibility.remove_item' | t: title: ci_title }}</span>
+    </a>
+  </div>
+
+  <div class="cart-item__total">
+    <span class="visually-hidden">{{ 'cart.line_total' | t }}</span>
+    {%- if item.original_line_price > item.final_line_price -%}
+      <s class="price__compare">{{ item.original_line_price | money }}</s>
+    {%- endif -%}
+    <span class="cart-item__total-value" data-line-total>{{ item.final_line_price | money }}</span>
+  </div>
+
+  <p class="cart-item__error field__error" data-line-error role="alert" hidden></p>
+</li>
