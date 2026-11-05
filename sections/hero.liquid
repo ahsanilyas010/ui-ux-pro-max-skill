@@ -38,7 +38,7 @@
   <div class="hero__overlay" aria-hidden="true"></div>
 
   <div class="container hero__inner">
-    <div class="hero__content" data-hero-content data-reveal>
+    <div class="hero__content" data-hero-content>
       {%- if eyebrow_text != blank -%}<p class="eyebrow hero__eyebrow">{{ eyebrow_text | escape }}</p>{%- endif -%}
       <h2 class="h1 hero__heading">{{ s.heading | default: 'sections.hero.default_heading' | t }}</h2>
       {%- assign body_text = s.text | default: 'sections.hero.default_text' | t -%}

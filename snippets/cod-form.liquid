@@ -1,0 +1,215 @@
+{%- comment -%}
+  COD quick-order trigger + order sheet.
+  Params: mode ('product' | 'cart'), product (required for mode 'product'), section_id (string)
+  Contract: wrapper keeps `data-cod-slot` (cart.js preserves it across drawer re-renders, product-form.js finds
+  `[data-cod-slot] [data-cod-open]`). The sheet itself lives in <template> and is moved to <body> on first open
+  by assets/cod-form.js, so it survives Section Rendering swaps and is never nested inside another dialog.
+  All strings: cod.* (locales/_fragments/cod.json). Numbers: settings.shipping_* / settings.cod_*.
+{%- endcomment -%}
+{%- liquid
+  assign cod_mode = mode | default: 'product'
+  assign sid = section_id | default: 'cod'
+  assign drawer_id = 'CodDrawer-' | append: sid
+  assign button_label = settings.cod_button_label
+  if button_label == blank
+    assign button_label = 'cod.title' | t
+  endif
+  assign wrap_class = 'cart__cod-slot'
+  if cod_mode == 'product'
+    assign wrap_class = 'product__cod-slot'
+  endif
+  assign threshold = settings.shipping_free_threshold | default: 3000
+  assign flat_rate = settings.shipping_flat_rate | default: 250
+  assign show_prepaid = false
+  if settings.pay_show_bank or settings.pay_show_cards or settings.pay_show_raast
+    assign show_prepaid = true
+  endif
+-%}
+{{ 'component-cod.css' | asset_url | stylesheet_tag }}
+<div class="{{ wrap_class }} cod cod--{{ cod_mode }}" data-cod-slot data-mode="{{ cod_mode }}" data-cod-id="{{ drawer_id }}" data-section-id="{{ sid }}"
+  {%- if cod_mode == 'product' and product != blank %} data-product-id="{{ product.id }}" data-product-title="{{ product.title | escape }}"{% if product.featured_image != blank %} data-product-image="{{ product.featured_image | image_url: width: 160 }}"{% endif %}{% endif %}>
+  <button type="button" class="button button--full button--lg cod__open" data-cod-open aria-haspopup="dialog" aria-expanded="false">
+    {%- render 'icon', name: 'banknote', size: 20 -%}
+    <span>{{ button_label }}</span>
+  </button>
+  <p class="cod__hint">{{ 'cod.subtitle' | t }}</p>
+  {%- if cod_mode == 'product' -%}
+    <p class="cod__or">{{ 'cod.or_add_to_cart' | t }}</p>
+  {%- endif -%}
+
+  <script type="application/json" data-cod-config>
+    {
+      "mode": {{ cod_mode | json }},
+      "threshold": {{ threshold | json }},
+      "flat": {{ flat_rate | json }},
+      "maxQty": {{ settings.cod_max_quantity | default: 5 | json }},
+      "eta": {{ settings.shipping_eta | default: '2–4 working days' | json }},
+      "whatsapp": {{ settings.whatsapp_number | json }},
+      "cartUrl": {{ routes.cart_url | json }},
+      "t": {
+        "errorName": {{ 'cod.error_name' | t | json }},
+        "errorPhone": {{ 'cod.error_phone' | t | json }},
+        "errorCity": {{ 'cod.error_city' | t | json }},
+        "errorAddress": {{ 'cod.error_address' | t | json }},
+        "errorEmail": {{ 'cod.error_email' | t | json }},
+        "errorGeneric": {{ 'cod.error_generic' | t | json }},
+        "errorSoldOut": {{ 'cod.error_sold_out' | t | json }},
+        "errorRate": {{ 'cod.error_rate_limit' | t | json }},
+        "errorDuplicate": {{ 'cod.error_duplicate' | t | json }},
+        "soldOutQty": {{ 'cod.sold_out_qty' | t: count: '[count]' | json }},
+        "empty": {{ 'cart.empty' | t | json }},
+        "submit": {{ 'cod.submit' | t | json }},
+        "submitting": {{ 'cod.submitting' | t | json }},
+        "qty": {{ 'cod.qty' | t: count: '[count]' | json }},
+        "free": {{ 'cart.delivery_free' | t | json }},
+        "consent": {{ 'cod.consent' | t: total: '[total]' | json }},
+        "etaCity": {{ 'cod.eta_city' | t: eta: '[eta]', city: '[city]' | json }},
+        "etaOther": {{ 'cod.eta_other' | t | json }},
+        "addonHint": {{ 'cart.addon_hint' | t: amount: '[amount]' | json }},
+        "addonView": {{ 'cod.addon_view' | t: title: '[title]' | json }},
+        "successTitle": {{ 'cod.success_title' | t | json }},
+        "successBody": {{ 'cod.success_body' | t: eta: '[eta]' | json }},
+        "advanceTitle": {{ 'cod.advance_title' | t | json }},
+        "advanceBody": {{ 'cod.advance_body' | t | json }},
+        "waConfirm": {{ 'cod.success_confirm_wa' | t | json }},
+        "waReceipt": {{ 'cod.success_receipt_wa' | t | json }},
+        "waConfirmText": {{ 'cod.wa_confirm_text' | t: order: '[order]', total: '[total]' | json }},
+        "waReceiptText": {{ 'cod.wa_receipt_text' | t: order: '[order]' | json }},
+        "orderLabel": {{ 'cod.success_order' | t: order: '[order]' | json }}
+      }
+    }
+  </script>
+
+  <template data-cod-template>
+    <hp-drawer id="{{ drawer_id }}" data-cod-drawer data-mode="{{ cod_mode }}">
+      <div class="drawer drawer--bottom cod-drawer" role="presentation">
+        <div class="drawer__overlay" data-drawer-close></div>
+        <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="{{ drawer_id }}-title">
+          <div class="drawer__header">
+            <span id="{{ drawer_id }}-title" class="drawer__title" data-drawer-focus tabindex="-1">{{ 'cod.title' | t }}</span>
+            <button type="button" class="icon-button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+          </div>
+
+          <form class="cod__form" data-cod-form novalidate autocomplete="on">
+            <div class="drawer__body cod__body">
+              {%- if settings.cod_test_badge -%}
+                <p class="cod__test"><span class="badge badge--new">{{ 'cod.test_mode' | t }}</span></p>
+              {%- endif -%}
+
+              <section class="cod__summary" aria-labelledby="{{ drawer_id }}-sum">
+                <h3 class="cod__section-title" id="{{ drawer_id }}-sum">{{ 'cod.summary_title' | t }}</h3>
+                <ul class="cod__lines" role="list" data-cod-lines></ul>
+                <div class="cod__addon" data-cod-addon hidden>
+                  <p class="cod__addon-title">{{ 'cart.addon_title' | t }}</p>
+                  <p class="cod__addon-hint" data-cod-addon-hint></p>
+                  <ul class="cod__addon-list" role="list" data-cod-addon-list></ul>
+                </div>
+              </section>
+
+              <div class="cod__error notice notice--error" data-cod-error role="alert" hidden>
+                {%- render 'icon', name: 'alert', size: 18 -%}
+                <div class="cod__error-body">
+                  <p data-cod-error-text></p>
+                  <p class="cod__error-actions">
+                    <button type="button" class="link" data-cod-retry>{{ 'cod.retry' | t }}</button>
+                    <a class="link" href="{{ routes.cart_url }}" data-cod-checkout>{{ 'cod.use_checkout' | t }}</a>
+                  </p>
+                </div>
+              </div>
+
+              <div class="cod__fields">
+                <div class="field" data-field="name">
+                  <label class="field__label" for="{{ drawer_id }}-name">{{ 'cod.name' | t }}</label>
+                  <input class="field__input" id="{{ drawer_id }}-name" name="name" type="text" autocomplete="name" autocapitalize="words" maxlength="80" required placeholder="{{ 'cod.name_placeholder' | t }}" aria-describedby="{{ drawer_id }}-name-err">
+                  <p class="field__error" id="{{ drawer_id }}-name-err" data-error></p>
+                </div>
+
+                <div class="field" data-field="phone">
+                  <label class="field__label" for="{{ drawer_id }}-phone">{{ 'cod.phone' | t }}</label>
+                  <input class="field__input" id="{{ drawer_id }}-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="20" required placeholder="{{ 'cod.phone_placeholder' | t }}" aria-describedby="{{ drawer_id }}-phone-help {{ drawer_id }}-phone-err">
+                  <p class="field__help" id="{{ drawer_id }}-phone-help">{{ 'cod.phone_help' | t }}</p>
+                  <p class="field__error" id="{{ drawer_id }}-phone-err" data-error></p>
+                </div>
+
+                <div class="field" data-field="city">
+                  <label class="field__label" for="{{ drawer_id }}-city">{{ 'cod.city' | t }}</label>
+                  <input class="field__input" id="{{ drawer_id }}-city" name="city" type="text" list="{{ drawer_id }}-cities" autocomplete="address-level2" autocapitalize="words" maxlength="60" required placeholder="{{ 'cod.city_placeholder' | t }}" aria-describedby="{{ drawer_id }}-city-help {{ drawer_id }}-city-err">
+                  <datalist id="{{ drawer_id }}-cities" data-cod-cities></datalist>
+                  <p class="field__help" id="{{ drawer_id }}-city-help" data-cod-eta>{{ 'cod.city_not_listed' | t }}</p>
+                  <p class="field__error" id="{{ drawer_id }}-city-err" data-error></p>
+                </div>
+
+                <div class="field" data-field="address">
+                  <label class="field__label" for="{{ drawer_id }}-address">{{ 'cod.address' | t }}</label>
+                  <textarea class="field__textarea" id="{{ drawer_id }}-address" name="address" rows="3" autocomplete="street-address" maxlength="300" required placeholder="{{ 'cod.address_placeholder' | t }}" aria-describedby="{{ drawer_id }}-address-err"></textarea>
+                  <p class="field__error" id="{{ drawer_id }}-address-err" data-error></p>
+                </div>
+
+                <div class="field" data-field="note">
+                  <label class="field__label" for="{{ drawer_id }}-note">{{ 'cod.note' | t }}</label>
+                  <textarea class="field__textarea cod__note" id="{{ drawer_id }}-note" name="note" rows="2" maxlength="300" placeholder="{{ 'cod.note_placeholder' | t }}" aria-describedby="{{ drawer_id }}-note-err"></textarea>
+                  <p class="field__error" id="{{ drawer_id }}-note-err" data-error></p>
+                </div>
+
+                <div class="field" data-field="email">
+                  <label class="field__label" for="{{ drawer_id }}-email">{{ 'cod.email' | t }}</label>
+                  <input class="field__input" id="{{ drawer_id }}-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength="120" aria-describedby="{{ drawer_id }}-email-err">
+                  <p class="field__error" id="{{ drawer_id }}-email-err" data-error></p>
+                </div>
+
+                <div class="cod__hp" aria-hidden="true">
+                  <label for="{{ drawer_id }}-website">Website</label>
+                  <input id="{{ drawer_id }}-website" name="website" type="text" tabindex="-1" autocomplete="off">
+                  <input name="renderedAt" type="hidden" value="">
+                </div>
+              </div>
+
+              <dl class="cod__totals">
+                <div class="cod__totals-row"><dt>{{ 'cod.summary_items' | t }}</dt><dd data-cod-subtotal></dd></div>
+                <div class="cod__totals-row"><dt>{{ 'cod.summary_delivery' | t }}</dt><dd data-cod-delivery></dd></div>
+                <div class="cod__totals-row cod__totals-row--total"><dt>{{ 'cod.summary_total' | t }}</dt><dd data-cod-total></dd></div>
+              </dl>
+            </div>
+
+            <div class="drawer__footer cod__footer">
+              <p class="cod__consent text-xs" data-cod-consent></p>
+              {%- if settings.cod_consent_text != blank -%}
+                <p class="cod__consent text-xs">{{ settings.cod_consent_text }}</p>
+              {%- endif -%}
+              <button type="submit" class="button button--full button--lg" data-cod-submit>{{ 'cod.submit' | t }}</button>
+              <ul class="cod__trust text-xs" role="list">
+                <li>{% render 'icon', name: 'badge-check', size: 16 %}<span>{{ 'trust.original' | t }}</span></li>
+                <li>{% render 'icon', name: 'whatsapp', size: 16 %}<span>{{ 'trust.whatsapp' | t }}</span></li>
+                <li>{% render 'icon', name: 'exchange', size: 16 %}<span>{{ 'cod.trust_exchange' | t }}</span></li>
+              </ul>
+              {%- if show_prepaid -%}
+                <p class="cod__prepaid text-xs">{{ 'cod.prepaid_line' | t }} <a class="link" href="{{ routes.cart_url }}" data-cod-checkout>{{ 'cod.use_checkout' | t }}</a></p>
+              {%- endif -%}
+            </div>
+          </form>
+
+          <div class="drawer__body cod__success" data-cod-success hidden>
+            <span class="cod__check" aria-hidden="true">{% render 'icon', name: 'check', size: 32 %}</span>
+            <h2 class="cod__success-title" tabindex="-1" data-cod-success-title>{{ 'cod.success_title' | t }}</h2>
+            <p class="cod__success-order" data-cod-success-order></p>
+            <p class="cod__success-total"><span>{{ 'cod.summary_total' | t }}</span> <strong data-cod-success-total></strong></p>
+            <p class="cod__success-body" data-cod-success-body></p>
+            <div class="cod__advance notice" data-cod-advance hidden>
+              {%- render 'icon', name: 'info', size: 18 -%}
+              <p data-cod-advance-text></p>
+            </div>
+            <div class="cod__success-actions">
+              <a class="button button--full button--lg button--whatsapp" data-cod-wa href="https://wa.me/{{ settings.whatsapp_number }}" target="_blank" rel="noopener">
+                {%- render 'icon', name: 'whatsapp', size: 20 -%}
+                <span data-cod-wa-label>{{ 'cod.success_confirm_wa' | t }}</span>
+              </a>
+              <button type="button" class="button button--full button--secondary" data-drawer-close>{{ 'cod.success_continue' | t }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </hp-drawer>
+  </template>
+</div>
+<script src="{{ 'pk-cities.js' | asset_url }}" defer></script>
+<script src="{{ 'cod-form.js' | asset_url }}" defer></script>

@@ -94,7 +94,7 @@
             {%- endif -%}
 
             {%- if settings.cod_enabled and settings.cod_in_cart -%}
-              <div class="cart__cod-slot" data-cod-slot data-mode="cart"></div>
+              {% render 'cod-form', mode: 'cart', section_id: section.id %}
             {%- endif -%}
 
             <form action="{{ routes.cart_url }}" method="post" id="CartPageForm" novalidate>
