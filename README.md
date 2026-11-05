@@ -114,3 +114,8 @@ as the PDP (`products.product.exchange_rule`: "7-day free size exchange; refund 
 Recently viewed relies on the storefront search supporting `handle:` field queries; if it does not match on the live store, switch the query to `id:`.
 
 Performance budget and per-asset sizes: see PERF-NOTES.md.
+
+### Shopify upload gotchas (found the hard way)
+- Block, section and preset names in `{% schema %}` are limited to 25 characters. Theme Check does not flag this; Shopify rejects the file at upload (silently when the file is uploaded by URL).
+- `themeFilesUpsert` validates each template against the section schema already on the target theme. When replacing a section whose blocks change, upload a minimal template first, then the section, then the real template.
+- Files can be uploaded by URL (`body.type: URL`), but a rejected file only shows its error when re-sent as `TEXT`.
