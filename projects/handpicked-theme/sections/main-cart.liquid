@@ -1,0 +1,126 @@
+{{ 'component-cart.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign empty_handle = section.settings.empty_collection_handle | default: 'new-arrivals-1'
+  assign empty_collection = collections[empty_handle]
+  if empty_collection != blank and empty_collection.url != blank
+    assign empty_url = empty_collection.url
+  else
+    assign empty_url = routes.all_products_collection_url
+  endif
+  assign threshold = settings.shipping_free_threshold | default: 0 | times: 100 | round
+  if threshold > 0 and cart.total_price < threshold
+    assign delivery_cents = settings.shipping_flat_rate | default: 0 | times: 100 | round
+    assign delivery_free = false
+  else
+    assign delivery_cents = 0
+    assign delivery_free = true
+  endif
+  assign grand_total = cart.total_price | plus: delivery_cents
+  assign savings = cart.total_discount
+  for line in cart.items
+    if line.variant.compare_at_price > line.original_price
+      assign line_save = line.variant.compare_at_price | minus: line.original_price | times: line.quantity
+      assign savings = savings | plus: line_save
+    endif
+  endfor
+  assign savings_text = savings | money_without_currency | replace: '.00', '' | replace: ',00', ''
+-%}
+
+<div class="cart-page section" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="visually-hidden" role="status" aria-live="polite" data-cart-live></div>
+    <div class="cart-page__inner" data-cart-root data-cart-context="page" data-section-id="{{ section.id }}"
+      data-str-updated="{{ 'cart.updated' | t | escape }}"
+      data-str-removed="{{ 'cart.removed' | t: title: '[title]' | escape }}"
+      data-str-restored="{{ 'cart.restored' | t | escape }}"
+      data-str-undo="{{ 'cart.undo' | t | escape }}"
+      data-str-view-cart="{{ 'cart.view_cart' | t | escape }}">
+
+      <header class="cart-page__header">
+        <h1 class="cart-page__title">{{ 'cart.title' | t }}{% if cart.item_count > 0 %} <span class="cart-page__count">({{ cart.item_count }})</span>{% endif %}</h1>
+        <a class="link link--arrow" href="{{ routes.all_products_collection_url }}">{{ 'cart.continue_shopping' | t }}{% render 'icon', name: 'arrow-right', size: 16 %}</a>
+      </header>
+
+      <div class="cart-undo-slot" data-cart-undo-slot></div>
+
+      {%- if cart.item_count == 0 -%}
+        <div class="empty-state">
+          {% render 'icon', name: 'bag', size: 48 %}
+          <p>{{ 'cart.empty' | t }}</p>
+          <a class="button" href="{{ empty_url }}">{{ 'cart.empty_cta' | t }}</a>
+        </div>
+      {%- else -%}
+        <div class="cart-page__layout">
+          <div class="cart-page__items">
+            <h2 class="visually-hidden">{{ 'cart.items_heading' | t }}</h2>
+            <div class="cart-page__head" aria-hidden="true">
+              <span>{{ 'cart.col_product' | t }}</span>
+              <span>{{ 'cart.col_quantity' | t }}</span>
+              <span>{{ 'cart.col_total' | t }}</span>
+            </div>
+            <ul role="list" class="cart-items">
+              {%- for item in cart.items -%}
+                {% render 'cart-item', item: item, index: forloop.index, context: 'page' %}
+              {%- endfor -%}
+            </ul>
+            {%- if settings.cart_show_note -%}
+              <div class="field cart-note-field">
+                <label class="field__label" for="CartPage-note">{{ 'cart.note_label' | t }}</label>
+                <textarea class="field__textarea" id="CartPage-note" name="note" form="CartPageForm" data-cart-note placeholder="{{ 'cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+              </div>
+            {%- endif -%}
+          </div>
+
+          <aside class="cart-summary" aria-labelledby="CartPage-summary-title">
+            <h2 class="cart-summary__title" id="CartPage-summary-title">{{ 'cart.summary_title' | t }}</h2>
+            {%- if settings.cart_show_free_shipping_bar -%}
+              {% render 'free-shipping-bar', prefix: 'page' %}
+            {%- endif -%}
+            {%- if cart.cart_level_discount_applications.size > 0 -%}
+              <ul class="cart-discounts" role="list">
+                {%- for discount in cart.cart_level_discount_applications -%}
+                  <li>{% render 'icon', name: 'tag', size: 14 %}<span>{{ discount.title }} (-{{ discount.total_allocated_amount | money }})</span></li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+            <dl class="cart-totals">
+              <div class="cart-totals__row"><dt>{{ 'cart.subtotal' | t }}</dt><dd>{{ cart.total_price | money }}</dd></div>
+              <div class="cart-totals__row"><dt>{{ 'cart.delivery' | t }}</dt><dd>{% if delivery_free %}{{ 'cart.delivery_free' | t }}{% else %}{{ delivery_cents | money }}{% endif %}</dd></div>
+              <div class="cart-totals__row cart-totals__row--total"><dt>{{ 'cart.estimated_total' | t }}</dt><dd>{{ grand_total | money }}</dd></div>
+            </dl>
+            {%- if savings > 0 -%}
+              <p class="cart-footer__save text-sm">{{ 'cart.you_save' | t: amount: savings_text }}</p>
+            {%- endif -%}
+
+            <form action="{{ routes.cart_url }}" method="post" id="CartPageForm" novalidate>
+              <button type="submit" name="checkout" class="button button--secondary button--full button--lg">{{ 'cart.checkout' | t }}</button>
+            </form>
+            <p class="cart-footer__hint text-xs u-text-muted u-text-center">{{ 'cart.checkout_hint' | t }}</p>
+            {% render 'payment-icons', class: 'cart-footer__pay' %}
+            <p class="cart-footer__note text-xs u-text-muted u-text-center">{{ 'products.product.exchange_rule' | t }}. {{ 'cart.taxes_note' | t }}</p>
+
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when '@app' -%}
+                  {% render block %}
+              {%- endcase -%}
+            {%- endfor -%}
+          </aside>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+<script src="{{ 'cart.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Cart",
+  "tag": "section",
+  "settings": [
+    { "type": "text", "id": "empty_collection_handle", "label": "Empty cart: collection handle", "default": "new-arrivals-1", "info": "The empty-cart button links to this collection." }
+  ],
+  "blocks": [{ "type": "@app" }]
+}
+{% endschema %}

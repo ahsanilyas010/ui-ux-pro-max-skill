@@ -1,0 +1,187 @@
+{%- comment -%}
+  Cart drawer. Static section in the overlay group (id "CartDrawer" on the <hp-drawer>).
+  Re-rendered through the Section Rendering API: cart.js swaps the inner HTML of .drawer__panel[data-cart-root].
+  When fetched through the Product Recommendations API (recommendations.performed) it only outputs the upsell cards,
+  which cart.js reuses for the drawer and the cart page.
+{%- endcomment -%}
+{%- if recommendations.performed -%}
+  {%- if recommendations.products_count > 0 -%}
+    <div data-upsell-content>
+      <ul class="upsell-list scroller" role="list">
+        {%- for recommended in recommendations.products -%}
+          {%- if recommended.available -%}
+            {%- liquid
+              assign up_variants = recommended.variants | where: 'available', true
+              assign up_first = up_variants.first
+            -%}
+            <li class="upsell" data-upsell-item data-product-id="{{ recommended.id }}" data-price="{{ up_first.price }}">
+              <a class="media media--portrait upsell__media" href="{{ recommended.url }}" tabindex="-1" aria-hidden="true">
+                {%- if recommended.featured_image -%}
+                  {% render 'image', image: recommended.featured_image, sizes: '132px', widths: '132,264,396', alt: recommended.title %}
+                {%- endif -%}
+              </a>
+              <a class="upsell__title card__title" href="{{ recommended.url }}">{{ recommended.title }}</a>
+              <p class="upsell__price price">
+                <span class="price__current">{{ up_first.price | money }}</span>
+                {%- if up_first.compare_at_price > up_first.price -%}<s class="price__compare">{{ up_first.compare_at_price | money }}</s>{%- endif -%}
+              </p>
+              {%- if up_variants.size > 1 -%}
+                <label class="visually-hidden" for="UpsellSize-{{ recommended.id }}">{{ 'cart.upsell_size_label' | t: title: recommended.title }}</label>
+                <select class="field__select upsell__select" id="UpsellSize-{{ recommended.id }}" data-upsell-variant>
+                  {%- for v in up_variants -%}
+                    <option value="{{ v.id }}" data-price="{{ v.price }}">{{ v.title }}</option>
+                  {%- endfor -%}
+                </select>
+              {%- endif -%}
+              <button type="button" class="button button--ghost button--sm upsell__add" data-upsell-add data-variant-id="{{ up_first.id }}" aria-label="{{ 'cart.upsell_add_label' | t: title: recommended.title }}">
+                {%- render 'icon', name: 'plus', size: 14 -%}<span>{{ 'cart.upsell_add' | t }}</span>
+              </button>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+{%- else -%}
+  {{ 'component-cart.css' | asset_url | stylesheet_tag }}
+  {%- liquid
+    assign empty_handle = section.settings.empty_collection_handle | default: 'new-arrivals-1'
+    assign empty_collection = collections[empty_handle]
+    if empty_collection != blank and empty_collection.url != blank
+      assign empty_url = empty_collection.url
+    else
+      assign empty_url = routes.all_products_collection_url
+    endif
+    assign threshold = settings.shipping_free_threshold | default: 0 | times: 100 | round
+    if threshold > 0 and cart.total_price < threshold
+      assign delivery_cents = settings.shipping_flat_rate | default: 0 | times: 100 | round
+      assign delivery_free = false
+    else
+      assign delivery_cents = 0
+      assign delivery_free = true
+    endif
+    assign grand_total = cart.total_price | plus: delivery_cents
+    assign remaining = threshold | minus: cart.total_price
+    if remaining < 0 or delivery_free
+      assign remaining = 0
+    endif
+    assign remaining_text = remaining | money_without_currency | replace: '.00', '' | replace: ',00', ''
+    assign savings = cart.total_discount
+    for line in cart.items
+      if line.variant.compare_at_price > line.original_price
+        assign line_save = line.variant.compare_at_price | minus: line.original_price | times: line.quantity
+        assign savings = savings | plus: line_save
+      endif
+    endfor
+    assign savings_text = savings | money_without_currency | replace: '.00', '' | replace: ',00', ''
+    assign in_cart_ids = ''
+    for line in cart.items
+      assign in_cart_ids = in_cart_ids | append: line.product_id | append: ','
+    endfor
+  -%}
+
+  <hp-drawer id="CartDrawer" data-section-id="{{ section.id }}" data-cart-drawer>
+    <div class="drawer drawer--wide cart-drawer" role="presentation">
+      <div class="drawer__overlay" data-drawer-close></div>
+      <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="CartDrawer-title"
+        data-cart-root data-cart-context="drawer" data-section-id="{{ section.id }}"
+        data-str-updated="{{ 'cart.updated' | t | escape }}"
+        data-str-removed="{{ 'cart.removed' | t: title: '[title]' | escape }}"
+        data-str-restored="{{ 'cart.restored' | t | escape }}"
+        data-str-undo="{{ 'cart.undo' | t | escape }}"
+        data-str-view-cart="{{ 'cart.view_cart' | t | escape }}">
+        <div class="drawer__header">
+          <h2 id="CartDrawer-title" class="drawer__title">{{ 'cart.title' | t }} ({{ cart.item_count }})</h2>
+          <button class="icon-button" type="button" data-drawer-close aria-label="{{ 'accessibility.close_dialog' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+        </div>
+
+        <div class="drawer__body cart-drawer__body">
+          <div class="cart-undo-slot" data-cart-undo-slot></div>
+
+          {%- if cart.item_count == 0 -%}
+            <div class="empty-state">
+              {% render 'icon', name: 'bag', size: 40 %}
+              <p>{{ 'cart.empty' | t }}</p>
+              <a class="button" href="{{ empty_url }}">{{ 'cart.empty_cta' | t }}</a>
+            </div>
+          {%- else -%}
+            {%- if settings.cart_show_free_shipping_bar -%}
+              {% render 'free-shipping-bar', prefix: 'drawer' %}
+            {%- endif -%}
+
+            <ul role="list" class="cart-items">
+              {%- for item in cart.items -%}
+                {% render 'cart-item', item: item, index: forloop.index, context: 'drawer' %}
+              {%- endfor -%}
+            </ul>
+
+            {%- if settings.cart_show_upsells -%}
+              <section class="cart-upsells cart-upsells--drawer" data-cart-upsells data-context="drawer"
+                data-product-id="{{ cart.items.first.product_id }}" data-in-cart="{{ in_cart_ids }}"
+                data-remaining="{{ remaining }}" data-limit="{{ section.settings.upsell_limit }}"
+                data-title-default="{{ 'cart.upsell_title' | t | escape }}"
+                data-title-addon="{{ 'cart.addon_title' | t | escape }}"
+                data-hint-addon="{{ 'cart.addon_hint' | t: amount: remaining_text | escape }}"
+                aria-labelledby="CartDrawer-upsell-title" hidden>
+                <h3 class="cart-upsells__title" id="CartDrawer-upsell-title" data-upsell-title>{{ 'cart.upsell_title' | t }}</h3>
+                <p class="cart-upsells__hint text-sm u-text-muted" data-upsell-hint hidden></p>
+                <div data-upsell-slot></div>
+              </section>
+            {%- endif -%}
+
+            {%- if settings.cart_show_note -%}
+              <details class="cart-note">
+                <summary>{{ 'cart.note_label' | t }}</summary>
+                <label class="visually-hidden" for="CartDrawer-note">{{ 'cart.note_label' | t }}</label>
+                <textarea class="field__textarea" id="CartDrawer-note" name="note" form="CartDrawerForm" data-cart-note placeholder="{{ 'cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+              </details>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+
+        {%- if cart.item_count > 0 -%}
+          <div class="drawer__footer cart-footer">
+            {%- if cart.cart_level_discount_applications.size > 0 -%}
+              <ul class="cart-discounts" role="list">
+                {%- for discount in cart.cart_level_discount_applications -%}
+                  <li>{% render 'icon', name: 'tag', size: 14 %}<span>{{ discount.title }} (-{{ discount.total_allocated_amount | money }})</span></li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+            <dl class="cart-totals">
+              <div class="cart-totals__row"><dt>{{ 'cart.subtotal' | t }}</dt><dd>{{ cart.total_price | money }}</dd></div>
+              <div class="cart-totals__row"><dt>{{ 'cart.delivery' | t }}</dt><dd>{% if delivery_free %}{{ 'cart.delivery_free' | t }}{% else %}{{ delivery_cents | money }}{% endif %}</dd></div>
+              <div class="cart-totals__row cart-totals__row--total"><dt>{{ 'cart.estimated_total' | t }}</dt><dd>{{ grand_total | money }}</dd></div>
+            </dl>
+            {%- if savings > 0 -%}
+              <p class="cart-footer__save text-sm">{{ 'cart.you_save' | t: amount: savings_text }}</p>
+            {%- endif -%}
+
+            <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm" novalidate>
+              <button type="submit" name="checkout" class="button button--secondary button--full button--lg">{{ 'cart.checkout' | t }}</button>
+            </form>
+            <p class="cart-footer__hint text-xs u-text-muted u-text-center">{{ 'cart.checkout_hint' | t }}</p>
+            <a class="link text-sm u-text-center" href="{{ routes.cart_url }}">{{ 'cart.view_cart' | t }}</a>
+            {% render 'payment-icons', class: 'cart-footer__pay' %}
+            <p class="cart-footer__note text-xs u-text-muted u-text-center">{{ 'products.product.exchange_rule' | t }}. {{ 'cart.taxes_note' | t }}</p>
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="visually-hidden" role="status" aria-live="polite" data-cart-live></div>
+    </div>
+  </hp-drawer>
+  <script src="{{ 'cart.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "tag": "div",
+  "class": "shopify-section-cart-drawer",
+  "enabled_on": { "groups": ["custom.overlay"] },
+  "settings": [
+    { "type": "text", "id": "empty_collection_handle", "label": "Empty cart: collection handle", "default": "new-arrivals-1", "info": "The empty-cart button links to this collection." },
+    { "type": "range", "id": "upsell_limit", "label": "Complete-the-look products", "min": 2, "max": 6, "step": 1, "default": 4 }
+  ]
+}
+{% endschema %}

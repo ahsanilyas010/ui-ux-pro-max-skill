@@ -1,0 +1,156 @@
+{{ 'component-brands.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign source = section.settings.source
+  assign menu = section.settings.brands_menu
+  if menu == blank
+    assign menu = linklists['main-menu']
+  endif
+  assign brand_links = menu.links
+  for top in menu.links
+    assign top_title = top.title | downcase
+    if top_title contains 'brand' and top.links.size > 0
+      assign brand_links = top.links
+      break
+    endif
+  endfor
+  assign alphabet = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z #' | split: ' '
+-%}
+{%- paginate collections by 50 -%}
+  {%- liquid
+    assign records = ''
+    if source == 'all'
+      for c in collections
+        assign record = c.title | downcase | append: '§' | append: c.title | append: '§' | append: c.url | append: '§' | append: c.handle
+        if records != ''
+          assign records = records | append: '¦'
+        endif
+        assign records = records | append: record
+      endfor
+    else
+      for link in brand_links
+        assign link_handle = ''
+        if link.url contains '/collections/'
+          assign link_handle = link.url | split: '/collections/' | last | split: '?' | first | split: '/' | first | split: '#' | first
+        endif
+        assign record = link.title | downcase | append: '§' | append: link.title | append: '§' | append: link.url | append: '§' | append: link_handle
+        if records != ''
+          assign records = records | append: '¦'
+        endif
+        assign records = records | append: record
+      endfor
+    endif
+    assign sorted = records | split: '¦' | sort_natural
+    assign letters = ''
+    for rec in sorted
+      assign fields = rec | split: '§'
+      assign first_char = fields[1] | slice: 0 | upcase
+      unless 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' contains first_char
+        assign first_char = '#'
+      endunless
+      unless letters contains first_char
+        assign letters = letters | append: first_char
+      endunless
+    endfor
+  -%}
+  <section class="brands section" data-section-id="{{ section.id }}">
+    <div class="container">
+      {%- assign brands_crumb = 'collections.brands_title' | t -%}
+      {%- render 'breadcrumbs', current: brands_crumb -%}
+      <header class="brands__header">
+        <h1 class="h2">{{ 'collections.brands_title' | t }}</h1>
+        <p class="lead">{{ 'collections.brands_intro' | t }}</p>
+      </header>
+
+      {%- if sorted.size == 0 -%}
+        <div class="empty-state"><p>{{ 'collections.brands_empty' | t }}</p></div>
+      {%- else -%}
+        <nav class="brands-jump" aria-label="{{ 'collections.brands_jump_label' | t }}">
+          <ul class="brands-jump__list" role="list">
+            {%- for letter in alphabet -%}
+              {%- if letters contains letter -%}
+                {%- assign letter_id = letter -%}
+                {%- if letter == '#' -%}{%- assign letter_id = 'num' -%}{%- endif -%}
+                <li><a class="brands-jump__link" href="#brand-letter-{{ letter_id }}">{{ letter }}</a></li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </nav>
+
+        {%- for group_letter in alphabet -%}
+          {%- if letters contains group_letter -%}
+            {%- assign letter_id = group_letter -%}
+            {%- if group_letter == '#' -%}{%- assign letter_id = 'num' -%}{%- endif -%}
+            {%- assign group_label = 'collections.brands_letter_group' | t: letter: group_letter -%}
+            <section class="brands-group" id="brand-letter-{{ letter_id }}" aria-label="{{ group_label | escape }}">
+              <h2 class="brands-group__letter" aria-hidden="true">{{ group_letter }}</h2>
+              <ul class="brands-group__list" role="list">
+                {%- for rec in sorted -%}
+                  {%- liquid
+                    assign fields = rec | split: '§'
+                    assign title = fields[1]
+                    assign letter = title | slice: 0 | upcase
+                    unless 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' contains letter
+                      assign letter = '#'
+                    endunless
+                  -%}
+                  {%- if letter == group_letter -%}
+                    {%- liquid
+                      assign url = fields[2]
+                      assign handle = fields[3]
+                      assign brand = nil
+                      if handle != blank
+                        assign brand = collections[handle]
+                      endif
+                      assign logo = nil
+                      if section.settings.show_logos and brand
+                        assign logo = brand.metafields.custom.brand_logo.value
+                        if logo == blank
+                          assign logo = brand.image
+                        endif
+                      endif
+                    -%}
+                    <li class="brands-group__item">
+                      <a class="brand-tile" href="{{ url }}">
+                        <span class="brand-tile__logo{% if logo %} media media--contain{% endif %}">
+                          {%- if logo -%}
+                            {%- render 'image', image: logo, sizes: '(min-width: 990px) 160px, 40vw', widths: '160,240,360', alt: title -%}
+                          {%- else -%}
+                            <span class="brand-tile__wordmark">{{ title | escape }}</span>
+                          {%- endif -%}
+                        </span>
+                        {%- if logo -%}<span class="brand-tile__title">{{ title | escape }}</span>{%- endif -%}
+                        {%- if section.settings.show_counts and brand and brand.products_count > 0 -%}
+                          <span class="brand-tile__count text-xs u-text-muted">
+                            {%- if brand.products_count == 1 -%}{{ 'collections.products_count_one' | t }}{%- else -%}{{ 'collections.products_count' | t: count: brand.products_count }}{%- endif -%}
+                          </span>
+                        {%- endif -%}
+                      </a>
+                    </li>
+                  {%- endif -%}
+                {%- endfor -%}
+              </ul>
+            </section>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- if source == 'all' and paginate.pages > 1 -%}
+        <nav class="pagination-nav" aria-label="{{ 'products.facets.pagination' | t }}">{{ paginate | default_pagination }}</nav>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Brands A–Z",
+  "tag": "div",
+  "class": "shopify-section-main-list-collections",
+  "settings": [
+    { "type": "select", "id": "source", "label": "Brands come from", "options": [ { "value": "menu", "label": "A menu (recommended)" }, { "value": "all", "label": "All collections" } ], "default": "menu" },
+    { "type": "link_list", "id": "brands_menu", "label": "Menu", "default": "main-menu", "info": "If the menu has an item titled Brands, its sub-items are used; otherwise the menu's links." },
+    { "type": "checkbox", "id": "show_counts", "label": "Show product counts", "default": true },
+    { "type": "checkbox", "id": "show_logos", "label": "Show brand logos", "default": true }
+  ]
+}
+{% endschema %}

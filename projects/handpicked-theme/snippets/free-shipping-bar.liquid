@@ -1,0 +1,40 @@
+{%- comment -%}
+  Free-delivery progress bar. Threshold comes from settings.shipping_free_threshold (PKR) compared with cart.total_price (paisa).
+  Params:
+    prefix (string) unique id prefix, e.g. 'drawer' or 'page'
+  Renders nothing when the cart is empty or no threshold is configured.
+{%- endcomment -%}
+{%- liquid
+  assign fs_threshold = settings.shipping_free_threshold | default: 0 | times: 100 | round
+  assign fs_remaining = fs_threshold | minus: cart.total_price
+  if fs_remaining < 0
+    assign fs_remaining = 0
+  endif
+  assign fs_achieved = false
+  if cart.item_count > 0 and fs_remaining == 0
+    assign fs_achieved = true
+  endif
+  assign fs_ratio = 0
+  if fs_threshold > 0
+    assign fs_ratio = cart.total_price | times: 1.0 | divided_by: fs_threshold | at_most: 1 | at_least: 0
+  endif
+  assign fs_pct = fs_ratio | times: 100 | round
+  assign fs_remaining_text = fs_remaining | money_without_currency | replace: '.00', '' | replace: ',00', ''
+  assign fs_id = prefix | default: 'cart' | append: '-free-shipping'
+-%}
+{%- if fs_threshold > 0 and cart.item_count > 0 -%}
+  <div class="fs-bar{% if fs_achieved %} is-achieved{% endif %}" data-free-shipping>
+    <p class="fs-bar__text" id="{{ fs_id }}-text">
+      {%- if fs_achieved -%}
+        {% render 'icon', name: 'check-circle', size: 18 %}
+        <span>{{ 'cart.free_shipping_achieved' | t }}</span>
+      {%- else -%}
+        {% render 'icon', name: 'truck', size: 18 %}
+        <span>{{ 'cart.free_shipping_progress' | t: remaining: fs_remaining_text }}</span>
+      {%- endif -%}
+    </p>
+    <div class="fs-bar__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ fs_pct }}" aria-labelledby="{{ fs_id }}-text">
+      <span class="fs-bar__fill" style="transform: scaleX({{ fs_ratio }});"></span>
+    </div>
+  </div>
+{%- endif -%}

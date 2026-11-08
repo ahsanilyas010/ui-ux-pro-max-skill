@@ -1,0 +1,22 @@
+{{ 'component-content.css' | asset_url | stylesheet_tag }}
+<section class="section section--tight" data-section-id="{{ section.id }}">
+  <div class="container container--text">
+    {% render 'breadcrumbs', current: page.title %}
+    <header class="page-head" style="margin-top: var(--space-4);">
+      <h1 class="page-head__title">{{ page.title | escape }}</h1>
+    </header>
+    <div class="rte">{{ page.content }}</div>
+    {%- if section.settings.show_whatsapp -%}
+      <p class="page-cta"><a class="link link--arrow" href="https://wa.me/{{ settings.whatsapp_number }}" target="_blank" rel="noopener">{% render 'icon', name: 'whatsapp', size: 18 %} {{ 'pages.page.contact_cta' | t }}</a></p>
+    {%- endif -%}
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Page",
+  "tag": "div",
+  "settings": [
+    { "type": "checkbox", "id": "show_whatsapp", "label": "Show WhatsApp contact line", "default": true }
+  ]
+}
+{% endschema %}

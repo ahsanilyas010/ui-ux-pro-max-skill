@@ -1,0 +1,32 @@
+{{ 'component-content.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign width_class = 'container--text'
+  if s.wide
+    assign width_class = 'container--narrow'
+  endif
+-%}
+<section class="section" data-section-id="{{ section.id }}">
+  <div class="container {{ width_class }}" style="text-align: {{ s.alignment }};" data-reveal>
+    <div class="page-head"{% if s.alignment == 'center' %} style="justify-items:center;"{% endif %}>
+      {%- if s.eyebrow != blank -%}<p class="eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="h2">{{ s.heading | escape }}</h2>{%- endif -%}
+    </div>
+    {%- if s.text != blank -%}<div class="rte"{% if s.alignment == 'center' %} style="margin-inline:auto;"{% endif %}>{{ s.text }}</div>{%- endif -%}
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Rich text",
+  "tag": "div",
+  "class": "shopify-section-rich-text",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading" },
+    { "type": "richtext", "id": "text", "label": "Text" },
+    { "type": "select", "id": "alignment", "label": "Alignment", "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Centre" } ], "default": "left" },
+    { "type": "checkbox", "id": "wide", "label": "Wider column", "default": false }
+  ],
+  "presets": [ { "name": "Rich text" } ]
+}
+{% endschema %}

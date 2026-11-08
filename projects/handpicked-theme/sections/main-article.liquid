@@ -1,0 +1,88 @@
+{{ 'component-content.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign s = section.settings
+  assign share_url = request.origin | append: article.url | url_encode
+  assign share_title = article.title | url_encode
+  assign hero_alt = article.image.alt | default: article.title
+-%}
+<article class="section section--tight" data-section-id="{{ section.id }}">
+  <div class="container">
+    {% render 'breadcrumbs', current: article.title %}
+    <div class="article" style="margin-top: var(--space-4);">
+      <header class="article__head">
+        <p class="eyebrow">{{ blog.title | escape }}</p>
+        <h1 class="article__title">{{ article.title | escape }}</h1>
+        <p class="article__meta">
+          {{ article.published_at | time_tag: format: 'date' }}
+          {%- if s.show_author and article.author != blank %} · {{ 'blogs.article.by' | t: author: article.author }}{% endif -%}
+        </p>
+      </header>
+
+      {%- if article.image -%}
+        <div class="article__media media">
+          {% render 'image', image: article.image, sizes: '(min-width: 1100px) 1100px, 100vw', widths: '720,1080,1296,1512', priority: true, alt: hero_alt %}
+        </div>
+      {%- endif -%}
+
+      <div class="article__body rte">{{ article.content }}</div>
+
+      <footer class="article__foot">
+        <a class="link link--arrow" href="{{ blog.url }}">{% render 'icon', name: 'arrow-left', size: 16 %} {{ 'blogs.article.back_to_blog' | t: title: blog.title }}</a>
+        {%- if s.show_share -%}
+          <div class="article__share">
+            <span class="text-sm">{{ 'blogs.article.share' | t }}</span>
+            <a class="icon-button icon-button--bordered" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url }}" target="_blank" rel="noopener" aria-label="{{ 'blogs.article.share_facebook' | t }}">{% render 'icon', name: 'facebook', size: 18 %}</a>
+            <a class="icon-button icon-button--bordered" href="https://wa.me/?text={{ share_title }}%20{{ share_url }}" target="_blank" rel="noopener" aria-label="{{ 'blogs.article.share_whatsapp' | t }}">{% render 'icon', name: 'whatsapp', size: 18 %}</a>
+          </div>
+        {%- endif -%}
+      </footer>
+
+      {%- if blog.comments_enabled? -%}
+        <section class="comments" aria-labelledby="comments-title-{{ section.id }}">
+          <h2 class="h3" id="comments-title-{{ section.id }}">{{ 'blogs.article.comments_title' | t }}{% if article.comments_count > 0 %} ({{ article.comments_count }}){% endif %}</h2>
+          {%- for comment in article.comments -%}
+            <div class="comment">
+              <p class="comment__meta"><strong>{{ comment.author | escape }}</strong> · {{ comment.created_at | time_tag: format: 'date' }}</p>
+              <div class="rte">{{ comment.content }}</div>
+            </div>
+          {%- endfor -%}
+          {%- form 'new_comment', article -%}
+            {%- if form.posted_successfully? -%}
+              <p class="notice notice--success" role="status">{% if blog.moderated? %}{{ 'blogs.article.success_moderated' | t }}{% else %}{{ 'blogs.article.success' | t }}{% endif %}</p>
+            {%- endif -%}
+            {%- if form.errors -%}
+              <div class="notice notice--error" role="alert">{{ form.errors | default_errors }}</div>
+            {%- endif -%}
+            <h3 class="h4">{{ 'blogs.article.comment_form_title' | t }}</h3>
+            {%- if blog.moderated? -%}<p class="text-sm u-text-muted">{{ 'blogs.article.moderated' | t }}</p>{%- endif -%}
+            <div class="form-row">
+              <div class="field">
+                <label class="field__label" for="comment-author-{{ section.id }}">{{ 'blogs.article.name' | t }}</label>
+                <input class="field__input" id="comment-author-{{ section.id }}" name="comment[author]" type="text" autocomplete="name" value="{{ form.author }}" required>
+              </div>
+              <div class="field">
+                <label class="field__label" for="comment-email-{{ section.id }}">{{ 'blogs.article.email' | t }}</label>
+                <input class="field__input" id="comment-email-{{ section.id }}" name="comment[email]" type="email" autocomplete="email" value="{{ form.email }}" required>
+              </div>
+              <div class="field">
+                <label class="field__label" for="comment-body-{{ section.id }}">{{ 'blogs.article.message' | t }}</label>
+                <textarea class="field__textarea" id="comment-body-{{ section.id }}" name="comment[body]" rows="5" required>{{ form.body }}</textarea>
+              </div>
+              <div><button class="button" type="submit">{{ 'blogs.article.post' | t }}</button></div>
+            </div>
+          {%- endform -%}
+        </section>
+      {%- endif -%}
+    </div>
+  </div>
+</article>
+{% schema %}
+{
+  "name": "Article",
+  "tag": "div",
+  "settings": [
+    { "type": "checkbox", "id": "show_author", "label": "Show author", "default": false },
+    { "type": "checkbox", "id": "show_share", "label": "Show share links", "default": true }
+  ]
+}
+{% endschema %}

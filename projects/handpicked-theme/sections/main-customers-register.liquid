@@ -1,0 +1,18 @@
+{{ 'component-customers.css' | asset_url | stylesheet_tag }}
+<section class="customer container" data-section-id="{{ section.id }}">
+  <div class="customer__inner">
+    <h1 class="customer__title">{{ 'customer.register.title' | t }}</h1>
+    {%- form 'create_customer', novalidate: 'novalidate', class: 'customer__form' -%}
+      {%- if form.errors -%}<div class="notice notice--error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <div class="form-row form-row--2">
+        <div class="field"><label class="field__label" for="RegisterFirstName">{{ 'customer.register.first_name' | t }}</label><input class="field__input" type="text" name="customer[first_name]" id="RegisterFirstName" autocomplete="given-name"></div>
+        <div class="field"><label class="field__label" for="RegisterLastName">{{ 'customer.register.last_name' | t }}</label><input class="field__input" type="text" name="customer[last_name]" id="RegisterLastName" autocomplete="family-name"></div>
+      </div>
+      <div class="field"><label class="field__label" for="RegisterEmail">{{ 'customer.register.email' | t }}</label><input class="field__input" type="email" name="customer[email]" id="RegisterEmail" autocomplete="email" required></div>
+      <div class="field"><label class="field__label" for="RegisterPassword">{{ 'customer.register.password' | t }}</label><input class="field__input" type="password" name="customer[password]" id="RegisterPassword" autocomplete="new-password" required></div>
+      <button class="button button--full" type="submit">{{ 'customer.register.submit' | t }}</button>
+      <div class="customer__links"><a class="link" href="{{ routes.account_login_url }}">{{ 'customer.login.sign_in' | t }}</a></div>
+    {%- endform -%}
+  </div>
+</section>
+{% schema %}{ "name": "Customer register", "tag": "div", "settings": [] }{% endschema %}

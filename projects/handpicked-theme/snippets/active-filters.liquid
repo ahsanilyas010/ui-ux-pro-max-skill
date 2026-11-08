@@ -1,0 +1,45 @@
+{%- comment -%}
+  Active filter chips. Params: filters (collection.filters / search.filters), clear_url (string), id (string, optional)
+  Rendered inside <div data-facets-part="active"> by the section so facets.js can swap it.
+{%- endcomment -%}
+{%- liquid
+  assign chip_count = 0
+  for filter in filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign chip_count = chip_count | plus: 1
+      endif
+    else
+      assign chip_count = chip_count | plus: filter.active_values.size
+    endif
+  endfor
+-%}
+{%- if chip_count > 0 -%}
+  <div class="active-filters" role="group" aria-label="{{ 'products.facets.active_filters' | t }}">
+    <ul class="active-filters__list" role="list">
+      {%- for filter in filters -%}
+        {%- if filter.type == 'price_range' -%}
+          {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+            {%- liquid
+              assign min_label = filter.min_value.value | default: 0 | money
+              if filter.max_value.value != nil
+                assign max_label = filter.max_value.value | money
+              else
+                assign max_label = filter.range_max | money
+              endif
+              assign price_chip = min_label | append: ' – ' | append: max_label
+              assign remove_label = 'products.facets.remove_filter' | t: name: price_chip
+            -%}
+            <li><a class="chip active-filters__chip" href="{{ filter.url_to_remove }}" aria-label="{{ remove_label | escape }}">{{ price_chip }} {% render 'icon', name: 'close', size: 12 %}</a></li>
+          {%- endif -%}
+        {%- else -%}
+          {%- for value in filter.active_values -%}
+            {%- assign remove_label = 'products.facets.remove_filter' | t: name: value.label -%}
+            <li><a class="chip active-filters__chip" href="{{ value.url_to_remove }}" aria-label="{{ remove_label | escape }}">{{ value.label | escape }} {% render 'icon', name: 'close', size: 12 %}</a></li>
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      <li><a class="button--text active-filters__clear" href="{{ clear_url }}">{{ 'products.facets.clear_all' | t }}</a></li>
+    </ul>
+  </div>
+{%- endif -%}

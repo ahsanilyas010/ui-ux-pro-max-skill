@@ -1,0 +1,16 @@
+<div class="section apps-section" data-section-id="{{ section.id }}">
+  <div class="container">
+    {%- for block in section.blocks -%}
+      {% render block %}
+    {%- endfor -%}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Apps",
+  "tag": "section",
+  "settings": [],
+  "blocks": [ { "type": "@app" } ],
+  "presets": [ { "name": "Apps" } ]
+}
+{% endschema %}

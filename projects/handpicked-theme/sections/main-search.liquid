@@ -1,0 +1,226 @@
+{{ 'component-product-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-search.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign per_page = section.settings.products_per_page | default: 24
+  assign terms = search.terms
+  assign use_filters = false
+  if section.settings.enable_filtering and search.performed and search.filters.size > 0
+    assign use_filters = true
+  endif
+  assign use_sort = false
+  if search.performed and search.sort_options.size > 0 and search.results_count > 0
+    assign use_sort = true
+  endif
+  assign sort_current = search.sort_by | default: 'relevance'
+  assign card_sizes = '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  assign active_count = 0
+  for filter in search.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_count = active_count | plus: 1
+      endif
+    else
+      assign active_count = active_count | plus: filter.active_values.size
+    endif
+  endfor
+  assign current_type = 'all'
+  if search.types.size == 1
+    assign current_type = search.types[0]
+  endif
+  assign brand_menu = section.settings.popular_menu
+  if brand_menu == blank
+    assign brand_menu = linklists['main-menu']
+  endif
+  assign chip_links = brand_menu.links
+  for top in brand_menu.links
+    assign top_title = top.title | downcase
+    if top_title contains 'brand' and top.links.size > 0
+      assign chip_links = top.links
+      break
+    endif
+  endfor
+  assign search_label = 'search.title' | t
+-%}
+{%- paginate search.results by per_page -%}
+  <section class="search-page section section--tight" data-section-id="{{ section.id }}" data-facets-section="{{ section.id }}">
+    <div class="container">
+      <header class="search-page__header">
+        {%- if search.performed and terms != blank -%}
+          <p class="eyebrow">{{ search_label }}</p>
+          <h1 class="h2">{{ 'search.results_for' | t: terms: terms }}</h1>
+        {%- else -%}
+          <h1 class="h2">{{ search_label }}</h1>
+        {%- endif -%}
+        <form class="search-page__form" action="{{ routes.search_url }}" method="get" role="search">
+          <label class="visually-hidden" for="SearchPage-{{ section.id }}">{{ search_label }}</label>
+          <div class="input-group">
+            <input id="SearchPage-{{ section.id }}" class="field__input" type="search" name="q" value="{{ terms | escape }}" placeholder="{{ 'search.placeholder' | t }}" autocomplete="off">
+            <input type="hidden" name="options[prefix]" value="last">
+            <button class="button" type="submit" aria-label="{{ 'general.search' | t }}">{% render 'icon', name: 'search', size: 18 %}</button>
+          </div>
+        </form>
+      </header>
+
+      {%- if search.performed and terms != blank -%}
+        {%- if section.settings.show_tabs -%}
+          <nav class="search-tabs" aria-label="{{ 'search.result_types' | t }}">
+            <ul class="search-tabs__list" role="list">
+              {%- assign tab_types = 'all,product,page,article' | split: ',' -%}
+              {%- for tab in tab_types -%}
+                {%- liquid
+                  case tab
+                    when 'all'
+                      assign tab_label = 'search.all' | t
+                    when 'product'
+                      assign tab_label = 'search.products' | t
+                    when 'page'
+                      assign tab_label = 'search.pages' | t
+                    else
+                      assign tab_label = 'search.articles' | t
+                  endcase
+                -%}
+                <li>
+                  <a class="search-tabs__tab" href="{{ routes.search_url }}?q={{ terms | url_encode }}&amp;options%5Bprefix%5D=last{% if tab != 'all' %}&amp;type={{ tab }}{% endif %}"{% if tab == current_type %} aria-current="page"{% endif %}>{{ tab_label }}</a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </nav>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if search.performed == false or terms == blank -%}
+        <div class="search-page__empty">
+          <p class="lead">{{ 'search.no_results_hint' | t }}</p>
+          {%- if chip_links.size > 0 -%}
+            <p class="eyebrow u-mt-6">{{ 'search.popular_brands' | t }}</p>
+            <ul class="search-chips" role="list">
+              {%- for link in chip_links limit: 16 -%}
+                <li><a class="chip" href="{{ link.url }}">{{ link.title | escape }}</a></li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      {%- else -%}
+        {%- if use_filters or use_sort -%}
+          <div class="collection__toolbar">
+            {%- render 'facets', part: 'toolbar', filters: search.filters, results_count: search.results_count, sort_options: search.sort_options, sort_by: sort_current, show_filters: use_filters, show_sort: use_sort, active_count: active_count -%}
+          </div>
+        {%- else -%}
+          <p class="facets-toolbar__count text-sm u-text-muted" data-facets-part="count" role="status">
+            {%- if search.results_count == 1 -%}{{ 'search.results_count_one' | t }}{%- else -%}{{ 'search.results_count' | t: count: search.results_count }}{%- endif -%}
+          </p>
+        {%- endif -%}
+
+        <div data-facets-part="active">
+          {%- if use_filters -%}
+            {%- capture clear_url -%}{{ routes.search_url }}?q={{ terms | url_encode }}&options%5Bprefix%5D=last{%- endcapture -%}
+            {%- render 'active-filters', filters: search.filters, clear_url: clear_url -%}
+          {%- endif -%}
+        </div>
+
+        <div class="collection__results" data-facets-part="grid" aria-live="polite">
+          {%- if search.results.size > 0 -%}
+            <ul class="product-grid" role="list" data-product-grid>
+              {%- for item in search.results -%}
+                <li class="product-grid__item{% unless item.object_type == 'product' %} product-grid__item--content{% endunless %}">
+                  {%- case item.object_type -%}
+                    {%- when 'product' -%}
+                      {%- liquid
+                        assign first_chunk = false
+                        if paginate.current_page == 1 and forloop.index <= 4
+                          assign first_chunk = true
+                        endif
+                      -%}
+                      {%- render 'product-card', product: item, priority: first_chunk, sizes: card_sizes, show_quick_add: true -%}
+                    {%- when 'article' -%}
+                      <article class="search-card">
+                        {%- if item.image -%}
+                          <div class="media media--landscape search-card__media">{%- render 'image', image: item.image, sizes: '(min-width: 990px) 25vw, 50vw', widths: '360,540,720' -%}</div>
+                        {%- endif -%}
+                        <p class="eyebrow">{{ 'search.articles' | t }}</p>
+                        <h3 class="search-card__title"><a class="search-card__link" href="{{ item.url }}">{{ item.title | escape }}</a></h3>
+                        <p class="text-sm u-text-muted">{{ item.excerpt_or_content | strip_html | truncate: 140 }}</p>
+                      </article>
+                    {%- else -%}
+                      <article class="search-card">
+                        <p class="eyebrow">{{ 'search.pages' | t }}</p>
+                        <h3 class="search-card__title"><a class="search-card__link" href="{{ item.url }}">{{ item.title | escape }}</a></h3>
+                        <p class="text-sm u-text-muted">{{ item.content | strip_html | truncate: 140 }}</p>
+                      </article>
+                  {%- endcase -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- elsif active_count > 0 -%}
+            <div class="empty-state">
+              {%- render 'icon', name: 'filter', size: 40 -%}
+              <h2 class="h3">{{ 'products.facets.no_results' | t }}</h2>
+              <a class="button" href="{{ routes.search_url }}?q={{ terms | url_encode }}&amp;options%5Bprefix%5D=last">{{ 'products.facets.no_results_cta' | t }}</a>
+            </div>
+          {%- else -%}
+            <div class="empty-state">
+              {%- render 'icon', name: 'search', size: 40 -%}
+              <h2 class="h3">{{ 'search.no_results' | t: terms: terms }}</h2>
+              <p class="u-text-muted">{{ 'search.no_results_hint' | t }}</p>
+              {%- if chip_links.size > 0 -%}
+                <p class="eyebrow">{{ 'search.suggestions' | t }}</p>
+                <ul class="search-chips search-chips--center" role="list">
+                  {%- for link in chip_links limit: 12 -%}
+                    <li><a class="chip" href="{{ link.url }}">{{ link.title | escape }}</a></li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        <div data-facets-part="pager">
+          {%- if paginate.pages > 1 -%}
+            {%- if section.settings.enable_load_more -%}
+              {%- render 'load-more', paginate: paginate -%}
+            {%- else -%}
+              <nav class="pagination-nav" aria-label="{{ 'products.facets.pagination' | t }}">{{ paginate | default_pagination }}</nav>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+
+        <template data-facets-skeleton>
+          {%- for i in (1..8) -%}
+            <li class="product-grid__item">{%- render 'skeleton', variant: 'card' -%}</li>
+          {%- endfor -%}
+        </template>
+      {%- endif -%}
+    </div>
+
+    {%- if use_filters -%}
+      {%- render 'facets', part: 'drawer', filters: search.filters, results_count: search.results_count, sort_options: search.sort_options, sort_by: sort_current, show_sort: use_sort, form_url: routes.search_url, terms: terms, active_count: active_count -%}
+    {%- elsif search.performed -%}
+      <form id="FacetsForm" method="get" action="{{ routes.search_url }}" data-facets-form hidden>
+        <input type="hidden" name="q" value="{{ terms | escape }}">
+        <input type="hidden" name="options[prefix]" value="last">
+      </form>
+    {%- endif -%}
+  </section>
+{%- endpaginate -%}
+
+{%- if search.performed -%}
+  <script src="{{ 'facets.js' | asset_url }}" defer></script>
+  {%- if section.settings.enable_load_more -%}<script src="{{ 'load-more.js' | asset_url }}" defer></script>{%- endif -%}
+  {%- if settings.card_quick_add -%}<script src="{{ 'quick-add.js' | asset_url }}" defer></script>{%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Search results",
+  "tag": "div",
+  "class": "shopify-section-main-search",
+  "settings": [
+    { "type": "range", "id": "products_per_page", "label": "Results per page", "min": 12, "max": 48, "step": 4, "default": 24 },
+    { "type": "checkbox", "id": "enable_filtering", "label": "Enable filtering", "default": true },
+    { "type": "checkbox", "id": "show_tabs", "label": "Show result type tabs", "default": true },
+    { "type": "checkbox", "id": "enable_load_more", "label": "Load more instead of numbered pages", "default": true },
+    { "type": "link_list", "id": "popular_menu", "label": "Popular brands menu", "info": "Shown when there are no results. Defaults to the Brands items in the main menu." }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,72 @@
+{{ 'component-content.css' | asset_url | stylesheet_tag }}
+<section class="section section--tight" data-section-id="{{ section.id }}">
+  <div class="container">
+    {% render 'breadcrumbs', current: blog.title %}
+    <header class="page-head" style="margin-top: var(--space-4);">
+      <h1 class="page-head__title">{{ blog.title | escape }}</h1>
+    </header>
+
+    {%- if section.settings.show_tags and blog.all_tags.size > 0 -%}
+      <nav class="blog-tags" aria-label="{{ 'blogs.blog.filter_label' | t }}">
+        <a class="chip{% unless current_tags %} is-selected{% endunless %}" href="{{ blog.url }}"{% unless current_tags %} aria-current="page"{% endunless %}>{{ 'blogs.blog.all' | t }}</a>
+        {%- for tag in blog.all_tags -%}
+          {%- liquid
+            assign tag_active = false
+            if current_tags contains tag
+              assign tag_active = true
+            endif
+          -%}
+          <a class="chip{% if tag_active %} is-selected{% endif %}" href="{{ blog.url }}/tagged/{{ tag | handle }}"{% if tag_active %} aria-current="page"{% endif %}>{{ tag | escape }}</a>
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+
+    {%- paginate blog.articles by 9 -%}
+      {%- if blog.articles.size > 0 -%}
+        <ul class="blog-grid" role="list">
+          {%- for article in blog.articles -%}
+            {%- assign card_alt = article.image.alt | default: article.title -%}
+            <li class="post">
+              {%- if article.image -%}
+                <a class="post__media media" href="{{ article.url }}" tabindex="-1" aria-hidden="true">
+                  {% render 'image', image: article.image, sizes: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw', widths: '360,540,720,900', loading: 'lazy', alt: card_alt %}
+                </a>
+              {%- endif -%}
+              <p class="post__date">{{ article.published_at | time_tag: format: 'date' }}</p>
+              <h2 class="post__title"><a href="{{ article.url }}">{{ article.title | escape }}</a></h2>
+              <p class="post__excerpt">{{ article.excerpt_or_content | strip_html | truncate: 140 }}</p>
+              <a class="link link--arrow" href="{{ article.url }}" aria-label="{{ 'blogs.article.read_more' | t }}: {{ article.title | escape }}">{{ 'blogs.article.read_more' | t }} {% render 'icon', name: 'arrow-right', size: 16 %}</a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- else -%}
+        <div class="empty-state"><p>{{ 'blogs.blog.empty' | t }}</p></div>
+      {%- endif -%}
+
+      {%- if paginate.pages > 1 -%}
+        <nav class="pagination" aria-label="{{ 'blogs.blog.pagination' | t }}">
+          {%- if paginate.previous -%}<a class="pagination__item" href="{{ paginate.previous.url }}" aria-label="{{ 'accessibility.previous' | t }}">{% render 'icon', name: 'chevron-left', size: 18 %}</a>{%- endif -%}
+          {%- for part in paginate.parts -%}
+            {%- if part.is_link -%}
+              <a class="pagination__item" href="{{ part.url }}" aria-label="{{ 'products.facets.page' | t: page: part.title }}">{{ part.title }}</a>
+            {%- elsif part.title == paginate.current_page -%}
+              <span class="pagination__item is-current" aria-current="page">{{ part.title }}</span>
+            {%- else -%}
+              <span class="pagination__item" aria-hidden="true">{{ part.title }}</span>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if paginate.next -%}<a class="pagination__item" href="{{ paginate.next.url }}" aria-label="{{ 'accessibility.next' | t }}">{% render 'icon', name: 'chevron-right', size: 18 %}</a>{%- endif -%}
+        </nav>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Blog",
+  "tag": "div",
+  "settings": [
+    { "type": "checkbox", "id": "show_tags", "label": "Show topic filter", "default": true }
+  ]
+}
+{% endschema %}

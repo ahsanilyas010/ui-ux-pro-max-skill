@@ -1,0 +1,21 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "https://handpicked.pk/?preview_theme_id=PREVIEW_THEME_ID",
+        "https://handpicked.pk/collections/polo-1?preview_theme_id=PREVIEW_THEME_ID",
+        "https://handpicked.pk/collections/polo-1/products/placeholder?preview_theme_id=PREVIEW_THEME_ID"
+      ],
+      "numberOfRuns": 3,
+      "settings": { "preset": "mobile", "chromeFlags": "--headless --no-sandbox" }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.85 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }]
+      }
+    }
+  }
+}

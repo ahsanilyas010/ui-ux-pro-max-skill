@@ -1,0 +1,26 @@
+{%- comment -%}
+  Load-more control. Params: paginate (the paginate object), shown (items rendered so far on this page chunk, optional)
+  Rendered inside <div data-facets-part="pager" data-load-more-root>. Without JS the button is a normal link to the next page.
+{%- endcomment -%}
+{%- liquid
+  assign page_size = paginate.page_size
+  assign shown_count = paginate.current_page | times: page_size
+  if shown_count > paginate.items
+    assign shown_count = paginate.items
+  endif
+-%}
+<div class="load-more" data-load-more data-total="{{ paginate.items }}" data-page-size="{{ page_size }}" data-current-page="{{ paginate.current_page }}">
+  {%- if paginate.items > 0 -%}
+    <p class="load-more__status text-sm u-text-muted" data-load-more-status aria-live="polite">
+      {{- 'products.facets.showing' | t: shown: shown_count, total: paginate.items -}}
+    </p>
+    <div class="load-more__bar" aria-hidden="true"><span style="width: {{ shown_count | times: 100.0 | divided_by: paginate.items | round }}%"></span></div>
+  {%- endif -%}
+  {%- if paginate.next -%}
+    <a class="button button--secondary load-more__button" href="{{ paginate.next.url }}" data-load-more-button data-label-error="{{ 'products.facets.load_more_error' | t | escape }}" data-label-loaded="{{ 'products.facets.loaded_more' | t: count: '[count]' | escape }}" data-label-showing="{{ 'products.facets.showing' | t: shown: '[shown]', total: '[total]' | escape }}">
+      {{- 'products.facets.load_more' | t -}}
+    </a>
+  {%- elsif paginate.items > paginate.page_size -%}
+    <p class="text-sm u-text-muted">{{ 'products.facets.end_of_results' | t }}</p>
+  {%- endif -%}
+</div>

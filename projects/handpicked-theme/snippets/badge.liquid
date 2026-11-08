@@ -1,0 +1,11 @@
+{%- comment -%}
+  Badge pill (uses .badge* primitives from base.css).
+  Params:
+    text  (string, required) visible label
+    type  'sale' | 'new' | 'soldout' | 'fast' | 'original' | 'default'
+    class (string) extra classes
+  {% render 'badge', type: 'fast', text: 'Selling fast' %}
+{%- endcomment -%}
+{%- if text != blank -%}
+  <span class="badge{% if type and type != 'default' %} badge--{{ type }}{% endif %}{% if class %} {{ class }}{% endif %}">{{ text }}</span>
+{%- endif -%}

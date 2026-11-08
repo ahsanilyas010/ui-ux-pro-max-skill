@@ -1,0 +1,217 @@
+{{ 'component-header.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign menu = section.settings.menu
+  assign logo = section.settings.logo
+  assign logo_width = section.settings.logo_width | default: 150
+  assign brands_threshold = section.settings.brands_threshold | default: 12
+  assign promos = section.blocks | where: 'type', 'menu_promo'
+-%}
+<header class="header{% if section.settings.sticky %} header--sticky{% endif %}" data-header data-section-id="{{ section.id }}">
+  <div class="container header__inner">
+    <div class="header__left">
+      <button class="icon-button header__menu-toggle u-mobile-only" type="button" data-drawer-open="MenuDrawer" aria-controls="MenuDrawer" aria-expanded="false" aria-label="{{ 'accessibility.open_menu' | t }}">
+        {% render 'icon', name: 'menu', size: 22 %}
+      </button>
+      {%- if section.settings.show_search -%}
+        <button class="icon-button header__search-toggle u-desktop-only" type="button" data-drawer-open="SearchDrawer" aria-controls="SearchDrawer" aria-expanded="false" aria-label="{{ 'accessibility.open_search' | t }}">
+          {% render 'icon', name: 'search', size: 20 %}
+        </button>
+      {%- endif -%}
+    </div>
+
+    {%- if request.page_type == 'index' -%}<h1 class="header__logo-wrap">{%- else -%}<div class="header__logo-wrap">{%- endif -%}
+      <a class="header__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name }}">
+        {%- if logo != blank -%}
+          {%- assign logo_h = logo_width | divided_by: logo.aspect_ratio | round -%}
+          <img src="{{ logo | image_url: width: logo_width, scale: 2 }}" srcset="{{ logo | image_url: width: logo_width }} 1x, {{ logo | image_url: width: logo_width, scale: 2 }} 2x" width="{{ logo_width }}" height="{{ logo_h }}" alt="{{ logo.alt | default: shop.name | escape }}" style="width: {{ logo_width }}px" loading="eager" fetchpriority="high">
+        {%- else -%}
+          <span class="header__wordmark">{{ shop.name }}</span>
+        {%- endif -%}
+      </a>
+    {%- if request.page_type == 'index' -%}</h1>{%- else -%}</div>{%- endif -%}
+
+    <nav class="header__nav u-desktop-only" aria-label="{{ 'general.menu' | t }}">
+      <ul class="menu" role="list">
+        {%- for link in menu.links -%}
+          {%- assign child_count = link.links.size -%}
+          <li class="menu__item{% if child_count > 0 %} menu__item--has-children{% endif %}{% if link.active or link.child_active %} is-active{% endif %}">
+            <a class="menu__link" href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>
+              {{ link.title | escape }}
+              {%- if child_count > 0 -%}{% render 'icon', name: 'chevron-down', size: 14, class: 'menu__chevron' %}{%- endif -%}
+            </a>
+            {%- if child_count > 0 -%}
+              {%- assign promo = nil -%}
+              {%- for p in promos -%}
+                {%- if p.settings.menu_title == link.title -%}{%- assign promo = p -%}{%- endif -%}
+              {%- endfor -%}
+              <div class="mega" aria-label="{{ link.title | escape }}">
+                <div class="container mega__inner{% if child_count > brands_threshold %} mega__inner--brands{% endif %}">
+                  {%- if child_count > brands_threshold -%}
+                    {%- assign sorted = link.links | sort: 'title' -%}
+                    <div class="mega__brands">
+                      <ul class="mega__brand-list" role="list">
+                        {%- for child in sorted -%}
+                          <li><a class="mega__brand-link" href="{{ child.url }}">{{ child.title | escape }}</a></li>
+                        {%- endfor -%}
+                      </ul>
+                      <a class="link--arrow mega__all" href="{{ routes.collections_url }}">{{ 'header.all_brands' | t }} {% render 'icon', name: 'arrow-right', size: 16 %}</a>
+                    </div>
+                  {%- else -%}
+                    <div class="mega__cols">
+                      {%- assign grouped = false -%}
+                      {%- for child in link.links -%}{%- if child.links.size > 0 -%}{%- assign grouped = true -%}{%- endif -%}{%- endfor -%}
+                      {%- if grouped -%}
+                        {%- for child in link.links -%}
+                          <div class="mega__col">
+                            <a class="mega__heading" href="{{ child.url }}">{{ child.title | escape }}</a>
+                            {%- if child.links.size > 0 -%}
+                              <ul role="list">
+                                {%- for grandchild in child.links -%}
+                                  <li><a class="mega__link" href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a></li>
+                                {%- endfor -%}
+                              </ul>
+                            {%- endif -%}
+                          </div>
+                        {%- endfor -%}
+                      {%- else -%}
+                        <div class="mega__col mega__col--flow">
+                          <ul role="list" class="mega__flow">
+                            {%- for child in link.links -%}
+                              <li><a class="mega__link" href="{{ child.url }}">{{ child.title | escape }}</a></li>
+                            {%- endfor -%}
+                            <li><a class="mega__link mega__link--all" href="{{ link.url }}">{{ 'header.shop_all' | t: title: link.title }}</a></li>
+                          </ul>
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                  {%- if promo -%}
+                    <a class="mega__promo" href="{{ promo.settings.link | default: link.url }}" {{ promo.shopify_attributes }}>
+                      <div class="media media--portrait">
+                        {%- if promo.settings.image -%}{% render 'image', image: promo.settings.image, sizes: '280px', widths: '280,560' %}{%- endif -%}
+                      </div>
+                      {%- if promo.settings.heading != blank -%}<span class="mega__promo-heading">{{ promo.settings.heading | escape }}</span>{%- endif -%}
+                    </a>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      {%- if section.settings.show_search -%}
+        <button class="icon-button u-mobile-only" type="button" data-drawer-open="SearchDrawer" aria-controls="SearchDrawer" aria-expanded="false" aria-label="{{ 'accessibility.open_search' | t }}">
+          {% render 'icon', name: 'search', size: 20 %}
+        </button>
+      {%- endif -%}
+      {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+        <a class="icon-button u-desktop-only" href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" aria-label="{{ 'general.account' | t }}">
+          {% render 'icon', name: 'user', size: 20 %}
+        </a>
+      {%- endif -%}
+      {%- if settings.cart_type == 'drawer' -%}
+        <button class="icon-button header__cart" type="button" data-drawer-open="CartDrawer" aria-controls="CartDrawer" aria-expanded="false" aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}">
+          {% render 'icon', name: 'bag', size: 20 %}
+          <span class="icon-button__count" data-cart-count data-count="{{ cart.item_count }}" data-count-label="{{ 'accessibility.cart_count' | t: count: '[count]' }}">{{ cart.item_count }}</span>
+        </button>
+      {%- else -%}
+        <a class="icon-button header__cart" href="{{ routes.cart_url }}" aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}">
+          {% render 'icon', name: 'bag', size: 20 %}
+          <span class="icon-button__count" data-cart-count data-count="{{ cart.item_count }}" data-count-label="{{ 'accessibility.cart_count' | t: count: '[count]' }}">{{ cart.item_count }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</header>
+
+{%- comment -%} Mobile menu drawer {%- endcomment -%}
+<hp-drawer id="MenuDrawer">
+  <div class="drawer drawer--left menu-drawer" role="presentation">
+    <div class="drawer__overlay" data-drawer-close></div>
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="MenuDrawer-title">
+      <div class="drawer__header">
+        <span id="MenuDrawer-title" class="drawer__title">{{ 'general.menu' | t }}</span>
+        <button class="icon-button" type="button" data-drawer-close aria-label="{{ 'accessibility.close_menu' | t }}">{% render 'icon', name: 'close', size: 22 %}</button>
+      </div>
+      <nav class="drawer__body menu-drawer__body" aria-label="{{ 'general.menu' | t }}">
+        <ul class="menu-drawer__list" role="list">
+          {%- for link in menu.links -%}
+            <li class="menu-drawer__item">
+              {%- if link.links.size > 0 -%}
+                <details class="menu-drawer__details" data-accordion-group="menu-drawer-{{ section.id }}">
+                  <summary class="menu-drawer__link" aria-haspopup="true">
+                    <span>{{ link.title | escape }}</span>
+                    {% render 'icon', name: 'chevron-down', size: 18, class: 'menu-drawer__chevron' %}
+                  </summary>
+                  <ul class="menu-drawer__sublist" role="list">
+                    <li><a class="menu-drawer__sublink menu-drawer__sublink--all" href="{{ link.url }}">{{ 'header.shop_all' | t: title: link.title }}</a></li>
+                    {%- assign children = link.links -%}
+                    {%- if link.links.size > brands_threshold -%}{%- assign children = link.links | sort: 'title' -%}{%- endif -%}
+                    {%- for child in children -%}
+                      <li>
+                        <a class="menu-drawer__sublink" href="{{ child.url }}">{{ child.title | escape }}</a>
+                        {%- if child.links.size > 0 -%}
+                          <ul class="menu-drawer__subsublist" role="list">
+                            {%- for grandchild in child.links -%}
+                              <li><a class="menu-drawer__sublink menu-drawer__sublink--nested" href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a></li>
+                            {%- endfor -%}
+                          </ul>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                    {%- if link.links.size > brands_threshold -%}
+                      <li><a class="menu-drawer__sublink menu-drawer__sublink--all" href="{{ routes.collections_url }}">{{ 'header.all_brands' | t }}</a></li>
+                    {%- endif -%}
+                  </ul>
+                </details>
+              {%- else -%}
+                <a class="menu-drawer__link" href="{{ link.url }}">{{ link.title | escape }}</a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        <div class="menu-drawer__utility">
+          {%- if shop.customer_accounts_enabled -%}
+            <a class="menu-drawer__utility-link" href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}">{% render 'icon', name: 'user', size: 18 %} {{ 'general.account' | t }}</a>
+          {%- endif -%}
+          {%- if settings.whatsapp_number != blank -%}
+            <a class="menu-drawer__utility-link" href="https://wa.me/{{ settings.whatsapp_number }}" target="_blank" rel="noopener">{% render 'icon', name: 'whatsapp', size: 18 %} {{ 'general.whatsapp_us' | t }}</a>
+          {%- endif -%}
+        </div>
+        <div class="menu-drawer__trust">{% render 'trust-row', layout: 'grid' %}</div>
+      </nav>
+    </div>
+  </div>
+</hp-drawer>
+
+{% schema %}
+{
+  "name": "Header",
+  "tag": "div",
+  "class": "shopify-section-header",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "range", "id": "logo_width", "label": "Logo width (desktop)", "min": 80, "max": 240, "step": 10, "unit": "px", "default": 150 },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "range", "id": "brands_threshold", "label": "Treat menus with more than N links as a brands index", "min": 6, "max": 30, "step": 1, "default": 12 },
+    { "type": "checkbox", "id": "sticky", "label": "Sticky header", "default": true },
+    { "type": "checkbox", "id": "show_search", "label": "Show search", "default": true },
+    { "type": "checkbox", "id": "show_account", "label": "Show account icon", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "menu_promo", "name": "Mega menu promo", "limit": 6,
+      "settings": [
+        { "type": "text", "id": "menu_title", "label": "Show under menu item (exact title)", "default": "Men" },
+        { "type": "image_picker", "id": "image", "label": "Image (3:4)" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "New in" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,41 @@
+{
+  "type": "footer",
+  "name": "Footer group",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "tagline": "100% original international brands at outlet prices. Delivered across Pakistan, cash on delivery.",
+        "show_social": true,
+        "show_newsletter": true,
+        "newsletter_heading": "First to know",
+        "newsletter_text": "New drops from Boss, Ralph Lauren, Lacoste and more — plus subscriber-only deals.",
+        "show_payment": true,
+        "logo": "shopify://shop_images/logo-white.png"
+      },
+      "blocks": {
+        "shop": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Shop",
+            "menu": "main-menu"
+          }
+        },
+        "help": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Help",
+            "menu": "quick-links"
+          }
+        }
+      },
+      "block_order": [
+        "shop",
+        "help"
+      ]
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}

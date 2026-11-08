@@ -1,0 +1,57 @@
+{{ 'component-cart.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  "Complete the look" row for the cart page. The shell is server-rendered; cart.js fills [data-upsell-slot]
+  with recommendation cards (fetched through the cart drawer section, which owns the card markup) and,
+  while the cart is under the free-delivery threshold, switches to the "add one more" variant.
+{%- endcomment -%}
+{%- liquid
+  assign threshold = settings.shipping_free_threshold | default: 0 | times: 100 | round
+  assign remaining = threshold | minus: cart.total_price
+  if remaining < 0 or threshold <= 0
+    assign remaining = 0
+  endif
+  assign remaining_text = remaining | money_without_currency | replace: '.00', '' | replace: ',00', ''
+  assign in_cart_ids = ''
+  for line in cart.items
+    assign in_cart_ids = in_cart_ids | append: line.product_id | append: ','
+  endfor
+  if section.settings.heading != blank
+    assign heading = section.settings.heading
+  else
+    assign heading = 'cart.upsell_title' | t
+  endif
+-%}
+
+{%- if settings.cart_show_upsells and cart.item_count > 0 -%}
+  <section class="cart-upsells cart-upsells--page section section--border-top" data-cart-upsells data-context="page"
+    data-section-id="{{ section.id }}" data-product-id="{{ cart.items.first.product_id }}" data-in-cart="{{ in_cart_ids }}"
+    data-remaining="{{ remaining }}" data-limit="{{ section.settings.limit }}"
+    data-title-default="{{ heading | escape }}"
+    data-title-addon="{{ 'cart.addon_title' | t | escape }}"
+    data-hint-addon="{{ 'cart.addon_hint' | t: amount: remaining_text | escape }}"
+    aria-labelledby="CartUpsells-{{ section.id }}-title" hidden>
+    <div class="container">
+      <div class="section__header">
+        <div class="section__heading">
+          <h2 class="section__title" id="CartUpsells-{{ section.id }}-title" data-upsell-title>{{ heading | escape }}</h2>
+          <p class="section__subtitle" data-upsell-hint hidden></p>
+        </div>
+      </div>
+      <div data-upsell-slot></div>
+    </div>
+  </section>
+  <script src="{{ 'cart.js' | asset_url }}" defer></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart upsells",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Complete the look" },
+    { "type": "range", "id": "limit", "label": "Products to show", "min": 2, "max": 6, "step": 1, "default": 4 }
+  ],
+  "presets": [{ "name": "Cart upsells" }]
+}
+{% endschema %}

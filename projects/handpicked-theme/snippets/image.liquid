@@ -1,0 +1,51 @@
+{%- comment -%}
+  Responsive image with CLS-safe dimensions.
+  Params:
+    image      (required) image object
+    sizes      (string)  CSS sizes attr, default "100vw"
+    widths     (string)  comma list, default "360,540,720,900,1080,1296,1512,1920"
+    class      (string)
+    loading    'lazy' | 'eager' (default lazy)
+    priority   boolean -> fetchpriority="high" + eager
+    alt        (string) overrides image.alt
+    aspect     (string) e.g. '3/4' -> wraps nothing, but sets width/height from ratio when fit=cover
+{%- endcomment -%}
+{%- liquid
+  assign widths_str = widths | default: '360,540,720,900,1080,1296,1512,1920'
+  assign width_list = widths_str | split: ','
+  assign sizes_attr = sizes | default: '100vw'
+  assign alt_text = alt | default: image.alt | default: shop.name | escape
+  assign loading_attr = loading | default: 'lazy'
+  if priority
+    assign loading_attr = 'eager'
+  endif
+  assign max_width = image.width
+-%}
+{%- if image -%}
+  {%- capture srcset -%}
+    {%- for w in width_list -%}
+      {%- assign w_num = w | strip | times: 1 -%}
+      {%- if w_num <= max_width -%}
+        {{ image | image_url: width: w_num }} {{ w_num }}w,
+      {%- endif -%}
+    {%- endfor -%}
+    {{ image | image_url: width: max_width }} {{ max_width }}w
+  {%- endcapture -%}
+  <img
+    src="{{ image | image_url: width: 900 }}"
+    srcset="{{ srcset | strip }}"
+    sizes="{{ sizes_attr }}"
+    width="{{ image.width }}"
+    height="{{ image.height }}"
+    alt="{{ alt_text }}"
+    loading="{{ loading_attr }}"
+    decoding="async"
+    {% if priority %}fetchpriority="high"{% endif %}
+    {% if class %}class="{{ class }}"{% endif %}
+    {% if aspect %}style="aspect-ratio: {{ aspect }};"{% endif %}
+  >
+{%- else -%}
+  <div class="image-placeholder{% if class %} {{ class }}{% endif %}" {% if aspect %}style="aspect-ratio: {{ aspect }};"{% endif %} aria-hidden="true">
+    <span class="image-placeholder__mark">{{ shop.name | split: '.' | first | escape }}</span>
+  </div>
+{%- endif -%}

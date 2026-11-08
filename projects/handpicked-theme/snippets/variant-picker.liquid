@@ -1,0 +1,76 @@
+{%- comment -%}
+  Variant picker. Params: product (required), section_id (required), current_variant (required)
+  Size options render as pill radios, colour options as swatch pills, anything else as a select.
+  Unavailable values stay selectable (so the shopper can see "Sold out") but are struck through.
+  variant-picker.js owns behaviour, availability marking and the HP 'variant:change' event.
+{%- endcomment -%}
+{%- unless product.has_only_default_variant -%}
+  {%- liquid
+    assign show_stock = settings.pdp_show_stock
+    assign low_limit = settings.card_low_stock_threshold | default: 5
+    assign soldout_text = 'products.product.sold_out_option' | t
+  -%}
+  <div class="vp" data-variant-picker data-section-id="{{ section_id }}" data-product-url="{{ product.url }}" data-label-soldout="{{ soldout_text | escape }}" data-label-unavailable="{{ 'products.product.unavailable' | t | escape }}">
+    <script type="application/json" data-variants>{{ product.variants | json }}</script>
+    {%- for option in product.options_with_values -%}
+      {%- liquid
+        assign opt_index = forloop.index0
+        assign opt_name = option.name | downcase
+        assign is_size = false
+        assign is_color = false
+        if opt_name contains 'size'
+          assign is_size = true
+        elsif opt_name contains 'color' or opt_name contains 'colour'
+          assign is_color = true
+        endif
+        assign selected_value = current_variant.options[opt_index]
+      -%}
+      {%- if is_size or is_color -%}
+        <fieldset class="vp__group" data-option-group data-option-index="{{ opt_index }}">
+          <legend class="vp__legend">
+            <span class="vp__name">{{ option.name | escape }}</span>
+            <span class="vp__selected" data-selected-label>{{ selected_value | escape }}</span>
+          </legend>
+          <div class="vp__values">
+            {%- for value in option.values -%}
+              {%- liquid
+                assign value_stock = nil
+                assign value_available = value.available
+                if show_stock and product.options.size == 1
+                  for v in product.variants
+                    if v.option1 == value
+                      if v.available and v.inventory_management == 'shopify' and v.inventory_quantity > 0 and v.inventory_quantity <= low_limit
+                        assign value_stock = v.inventory_quantity
+                      endif
+                    endif
+                  endfor
+                endif
+              -%}
+              <label class="pill{% if is_color %} pill--swatch{% endif %}{% unless value_available %} is-disabled{% endunless %}" data-pill>
+                <input type="radio" name="{{ section_id }}-option-{{ opt_index }}" value="{{ value | escape }}" data-option-index="{{ opt_index }}"{% if value == selected_value %} checked{% endif %}>
+                {%- if is_color and value.swatch -%}
+                  <span class="pill__swatch" aria-hidden="true" style="{% if value.swatch.image %}background-image: url('{{ value.swatch.image | image_url: width: 64 }}'){% else %}--swatch: {{ value.swatch.color }}{% endif %}"></span>
+                {%- endif -%}
+                <span class="pill__label">{{ value | escape }}</span>
+                <span class="visually-hidden" data-soldout{% if value_available %} hidden{% endif %}>{{ soldout_text }}</span>
+                {%- if value_stock -%}<span class="pill__stock" data-pill-stock>{{ 'products.product.n_left' | t: count: value_stock }}</span>{%- endif -%}
+              </label>
+            {%- endfor -%}
+          </div>
+        </fieldset>
+      {%- else -%}
+        <div class="vp__group" data-option-group data-option-index="{{ opt_index }}">
+          <label class="vp__legend" for="{{ section_id }}-select-{{ opt_index }}">
+            <span class="vp__name">{{ option.name | escape }}</span>
+          </label>
+          <select class="field__select vp__select" id="{{ section_id }}-select-{{ opt_index }}" data-option-index="{{ opt_index }}">
+            {%- for value in option.values -%}
+              <option value="{{ value | escape }}"{% if value == selected_value %} selected{% endif %}>{{ value | escape }}{% unless value.available %} {{ soldout_text }}{% endunless %}</option>
+            {%- endfor -%}
+          </select>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+    <p class="vp__notice" data-vp-notice role="status" aria-live="polite" hidden></p>
+  </div>
+{%- endunless -%}

@@ -1,0 +1,17 @@
+{%- comment -%} Skeleton loader. Params: variant ('card' | 'line' | 'block'), count {%- endcomment -%}
+{%- assign n = count | default: 1 -%}
+{%- for i in (1..n) -%}
+  {%- case variant -%}
+    {%- when 'card' -%}
+      <div class="skeleton skeleton--card" aria-hidden="true">
+        <div class="skeleton__media"></div>
+        <div class="skeleton__line skeleton__line--sm"></div>
+        <div class="skeleton__line"></div>
+        <div class="skeleton__line skeleton__line--xs"></div>
+      </div>
+    {%- when 'block' -%}
+      <div class="skeleton skeleton__block" aria-hidden="true"></div>
+    {%- else -%}
+      <div class="skeleton skeleton__line" aria-hidden="true"></div>
+  {%- endcase -%}
+{%- endfor -%}
