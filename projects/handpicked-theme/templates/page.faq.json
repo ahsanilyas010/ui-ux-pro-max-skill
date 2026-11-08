@@ -10,7 +10,7 @@
         "q4": { "type": "question", "settings": { "question": "What if the size does not fit?", "answer": "<p>We offer a 7-day free size exchange. Message us on WhatsApp within 7 days of delivery with your order number and the size you need. Unworn items with tags only, please.</p>" } },
         "q5": { "type": "question", "settings": { "question": "Can I get a refund?", "answer": "<p>Refunds are only given when the item is not as described. For size or fit, we exchange instead.</p>" } },
         "q6": { "type": "question", "settings": { "question": "How do I track my order?", "answer": "<p>Once your parcel ships, we send the courier tracking details on WhatsApp.</p>" } },
-        "q7": { "type": "question", "settings": { "question": "How can I contact you?", "answer": "<p>Message us on WhatsApp at +92 342 2221633. We reply during business hours.</p>" } }
+        "q7": { "type": "question", "settings": { "question": "How can I contact you?", "answer": "<p>Message us on WhatsApp at +92 321 8780499. We reply during business hours.</p>" } }
       },
       "block_order": ["q1", "q2", "q3", "q4", "q5", "q6", "q7"]
     }
